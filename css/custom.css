@@ -1,0 +1,178 @@
+.logged-name {
+  margin-top: 10px;
+}
+
+.br-section-wrapper {
+  padding: 30px !important;
+}
+
+.faicon {
+  font-size: 18px
+}
+
+.ui-datepicker {
+  z-index: 999999 !important;
+}
+
+.item-container {
+  max-height: 600px;
+  /* batas tinggi tabel item */
+  overflow-y: auto;
+  /* aktifin scroll */
+  border: 1px solid #8a8a8a;
+  margin-bottom: 10px;
+}
+
+/* bikin header tabel sticky */
+.item-container thead th {
+  position: sticky;
+  top: 0;
+  background: #afafaf;
+  /* biar kontras */
+  z-index: 2;
+  /* pastikan header di atas body */
+
+}
+
+/* Semua input di tabel item */
+#tblItems input.form-control,
+#tblItems select.form-control {
+  height: 35px;
+  /* seragam tinggi */
+  padding: 4px 8px;
+  /* biar lega */
+  font-size: 13px;
+  /* lebih kecil biar pas di tabel */
+  line-height: 1.4;
+}
+
+/* Select2 biar full width */
+#tblItems .select2-container {
+  width: 100% !important;
+}
+
+/* Select2 input teks di dalam dropdown */
+#tblItems .select2-selection {
+  height: 35px !important;
+  display: flex;
+  align-items: center;
+  /* biar teks vertikal rata tengah */
+  font-size: 13px;
+}
+
+.modal-xl {
+  max-width: 80% !important;
+}
+
+.modal-body {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+
+.select2-container {
+  width: 100% !important;
+}
+
+.select2-container--default .select2-selection--single {
+  height: 40px !important;
+  padding: 6px 12px;
+  border: 1px solid #8dc6ff;
+  border-radius: 4px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 26px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 36px;
+}
+
+.table-secondary {
+  background-color: #f8f9fa !important;
+}
+
+.badge-secondary {
+  font-size: 11px;
+  background-color: #ff5353;
+  vertical-align: middle;
+}
+
+.shadow-sm {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Samakan tinggi card JOB ORDER */
+
+.bg-info .pd-x-20.pd-t-20 {
+  padding: 0px 25px 25px 25px !important;
+}
+
+.bg-purple .pd-x-20.pd-t-20 {
+  padding: 0px 25px 25px 25px !important;
+}
+
+.bg-danger .pd-x-20.pd-t-20 {
+  padding: 0px 25px 25px 25px !important;
+}
+
+.bg-success .pd-x-20.pd-t-20 {
+  padding: 0px 25px 25px 25px !important;
+}
+
+.bg-warning .pd-x-20.pd-t-20 {
+  padding: 0px 25px 25px 25px !important;
+}
+
+
+/* Wave */
+#joTodayWaveChart,
+#salesWaveChart,
+#expenseWaveChart,
+#costWaveChart,
+#profitWaveChart {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100% !important;
+  height: 70px !important;
+  opacity: 0.25;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-info,
+.bg-purple,
+.bg-danger,
+.bg-warning,
+.bg-success {
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Gradasi warna */
+.bg-info {
+  background: linear-gradient(135deg, #00b4db, #0083b0);
+}
+
+.bg-purple {
+  background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+}
+
+.bg-success {
+  background: linear-gradient(135deg, #00b09b, #96c93d);
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, #fd8a1d, #c9a83d);
+}
