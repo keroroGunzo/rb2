@@ -990,7 +990,7 @@ function doCallBack(halaman) {
             '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
         },
         ajax: {
-          url: BASE_URL + "models/mdl_getgudang.php",
+          url: BASE_URL + "models/mdl_getproduk.php",
           type: "GET",
           dataSrc: "data",
         },
@@ -1005,11 +1005,80 @@ function doCallBack(halaman) {
             searchable: false,
           },
           {
-            data: "name",
-            width: "20%",
+            data: "sku",
+            width: "10%",
             searchable: true,
           },
-          { data: "address" },
+          { data: "barcode" },
+          { data: "name" },
+          { data: "price_retail" },
+          { data: "price_wholesale" },
+          { data: "min_wholesale_qty" },
+          { data: "cost_price" },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modal"
+                                id="ubah" style="margin:2px"
+                                onclick="getID(${data})">
+                                <span class="fa fa-pencil"></span> Ubah
+                            </button>
+                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
+                                id="hapus" style="margin:2px"
+                                onclick="hapusData(${data},'${full.name}')">
+                                <span class="fa fa-trash-o"></span> Hapus
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      break;
+    case "view_mastermember":
+      console.log("Inisialisasi DataTable untuk halaman master member ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getmember.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "name"
+          },
+          {
+            data: "phone"
+          },
+          { data: "discount_percent" },
           { data: "created_at" },
           {
             data: "id",

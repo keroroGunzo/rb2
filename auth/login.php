@@ -24,7 +24,7 @@
   <meta name="description" content="Your Logistics Solution.">
   <meta name="author" content="ThemePixels">
 
-  <title>PT.Tobaqon Antobaq Trans</title>
+  <title>Rizky Berkah</title>
 
   <!-- vendor css -->
   <link href="../lib/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
