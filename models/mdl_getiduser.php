@@ -14,8 +14,8 @@ if (!$id || !is_numeric($id)) {
     exit;
 }
 
-$sql = "SELECT  name, phone, discount_percent
-        FROM members
+$sql = "SELECT id,name,email,role,store_id,is_active 
+        FROM users 
         WHERE id = :id";
 
 $result = $db->single($sql, [':id' => $id]);
@@ -23,5 +23,5 @@ $result = $db->single($sql, [':id' => $id]);
 if ($result) {
     echo json_encode($result);
 } else {
-    echo json_encode(['error' => true, 'message' => 'Produk tidak ditemukan']);
+    echo json_encode(['error' => true, 'message' => 'User tidak ditemukan']);
 }

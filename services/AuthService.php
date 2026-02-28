@@ -24,6 +24,13 @@ class AuthService
             return false;
         }
 
+        // Update last login
+        $this->db->execute(
+            "UPDATE users SET last_login = NOW() WHERE id = :id",
+            [':id' => $user['id']]
+        );
+
+
         session_regenerate_id(true);
 
         $_SESSION['user_id']  = $user['id'];

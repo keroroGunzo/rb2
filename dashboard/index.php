@@ -80,75 +80,65 @@ if (!isset($_SESSION['user_id'])) {
           <li class="sub-item"><a href="view_mastergudang" class="sub-link">Gudang</a></li>
           <li class="sub-item"><a href="view_masterproduk" class="sub-link">Produk</a></li>
           <li class="sub-item"><a href="view_mastermember" class="sub-link">Member</a></li>
-          <li class="sub-item"><a href="view_mastersuplier" class="sub-link">Suplier</a></li>
+          <li class="sub-item"><a href="view_mastersuppliers" class="sub-link">Suplier</a></li>
           <li class="sub-item"><a href="view_masteruser" class="sub-link">User</a></li>
         </ul>
       </li>
       <li class="br-menu-item">
         <a href="#" class="br-menu-link with-sub dummy">
           <i class="menu-item-icon faicon fa fa-briefcase"></i>
-          <span class="menu-item-label">Job Order</span>
+          <span class="menu-item-label">Pembelian</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_joborder" class="sub-link">Buat Job Order</a></li>
-          <li class="sub-item"><a href="view_joexpense" class="sub-link">Buat Job Expense</a></li>
+          <li class="sub-item"><a href="view_joborder" class="sub-link">Purchase Order</a></li>
+          <li class="sub-item"><a href="view_barangmasuk" class="sub-link">Barang Masuk</a></li>
+          <li class="sub-item"><a href="view_joexpense" class="sub-link">Retur Ke Supplier</a></li>
         </ul>
       </li><!-- br-menu-item -->
       <li class="br-menu-item">
         <a href="#" class="br-menu-link with-sub dummy">
           <i class="menu-item-icon faicon fa fa-file-invoice-dollar"></i>
-          <span class="menu-item-label">Payment Request</span>
+          <span class="menu-item-label">Inventory</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_paymentreq" class="sub-link">Payment Request</a></li>
-          <li class="sub-item"><a href="view_aproval" class="sub-link">Aproval</a></li>
-          <li class="sub-item"><a href="view_paymentreqpayment" class="sub-link">Daftar Aproval</a></li>
+          <li class="sub-item"><a href="view_paymentreq" class="sub-link">Stok Saat Ini</a></li>
+          <li class="sub-item"><a href="view_aproval" class="sub-link">Transfer Barang</a></li>
+          <li class="sub-item"><a href="view_paymentreqpayment" class="sub-link">Penyesuaian Stok</a></li>
+          <li class="sub-item"><a href="view_paymentreqpayment" class="sub-link">Riwayat Pergerakan</a></li>
         </ul>
       </li><!-- br-menu-item -->
       <li class="br-menu-item">
         <a href="#" class="br-menu-link with-sub dummy">
           <i class="menu-item-icon faicon fa fa-file-invoice"></i>
-          <span class="menu-item-label">Invoice</span>
+          <span class="menu-item-label">Penjualan</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_invoice" class="sub-link">Daftar Invoice</a></li>
-          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Pembayaran Customer</a></li>
+          <li class="sub-item"><a href="view_invoice" class="sub-link">Penjualan</a></li>
+          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Retur Penjualan</a></li>
         </ul>
-      </li><!-- br-menu-item -->
-      <!-- <li class="br-menu-item">
-        <a href="#" class="br-menu-link with-sub dummy">
-          <i class="menu-item-icon faicon fa fa-balance-scale"></i>
-          <span class="menu-item-label">Profit Sharing</span>
-        </a>
-        <ul class="br-menu-sub">
-          <li class="sub-item"><a href="../views/view_profitsharing" class="sub-link">Daftar Profit Sharing</a></li>
-        </ul>
-      </li> -->
-      <!-- br-menu-item -->
-      <!-- <li class="br-menu-item">
-        <a href="#" class="br-menu-link with-sub dummy">
-          <i class="menu-item-icon faicon fa fa-book"></i>
-          <span class="menu-item-label">General Ledger</span>
-        </a>
-        <ul class="br-menu-sub">
-          <li class="sub-item"><a href="" class="sub-link">Jurnal Umum</a></li>
-          <li class="sub-item"><a href="" class="sub-link">Buku Besar</a></li>
-          <li class="sub-item"><a href="" class="sub-link">Trial Balance</a></li>
-        </ul>
-      </li> -->
+      </li>
       <li class="br-menu-item">
         <a href="#" class="br-menu-link with-sub dummy">
-          <i class="menu-item-icon faicon fa fa-chart-line"></i>
+          <i class="menu-item-icon faicon fa fa-file-invoice"></i>
           <span class="menu-item-label">Laporan</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="rpt_sales_invoice" class="sub-link">Laporan Sales Invoice</a></li>
-          <!-- <li class="sub-item"><a href="rpt_profitshare" class="sub-link">Laporan Profit Share</a></li> -->
-          <li class="sub-item"><a href="rpt_paymentcust" class="sub-link">Laporan Payment Customer</a></li>
-          <li class="sub-item"><a href="rpt_labarugi" class="sub-link">Laporan Laba / Rugi</a></li>
-          <li class="sub-item"><a href="rpt_labarugi_per_jo" class="sub-link">Laporan Laba / Rugi Per JO</a></li>
+          <li class="sub-item"><a href="view_invoice" class="sub-link">Laporan Penjualan</a></li>
+          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Laporan Stok</a></li>
+          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Laba Rugi</a></li>
         </ul>
-      </li><!-- br-menu-item -->
+      </li>
+      <li class="br-menu-item">
+        <a href="#" class="br-menu-link with-sub dummy">
+          <i class="menu-item-icon faicon fa fa-file-invoice"></i>
+          <span class="menu-item-label">Pengaturan</span>
+        </a><!-- br-menu-link -->
+        <ul class="br-menu-sub">
+          <li class="sub-item"><a href="view_invoice" class="sub-link">Profil Toko</a></li>
+          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Logout</a></li>
+        </ul>
+      </li>
+
     </ul><!-- br-sideleft-menu -->
   </div><!-- br-sideleft -->
   <!-- ########## END: LEFT PANEL ########## -->

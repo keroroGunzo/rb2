@@ -41,6 +41,29 @@ function resetModalForm() {
   $("#id").val("");
 }
 
+//fungsi reset modal barang masuk
+function resetBarangMasukModal() {
+
+    let modal = $("#modal");
+
+    // 1️⃣ Reset seluruh form
+    modal.find("form")[0].reset();
+
+    // 2️⃣ Kosongkan hidden id
+    modal.find("input[name='id']").val('');
+
+    // 3️⃣ Reset select2 header
+    modal.find("select").val('').trigger('change');
+
+    // 4️⃣ Kosongkan table item
+    $("#tblBarangMasuk tbody").empty();
+
+    // 5️⃣ Reset total
+    $("#bm_total_display").val('');
+    $("#bm_total").val('');
+
+}
+
 document.addEventListener("click", function (e) {
   var link = e.target.closest("a[data-getid]");
   if (link) {
@@ -672,178 +695,70 @@ function todayExpense() {
   });
 }
 
-function loadcbItem($select, selectedId = null) {
-  return $.getJSON("models/mdl_getitems.php", function (res) {
-    $select.empty().append('<option value="">-- Pilih Item --</option>');
-
-    if (res && res.data) {
-      $.each(res.data, function (i, item) {
-        $select.append(
-          '<option value="' + item.id + '">' + item.nama_item + "</option>",
-        );
-      });
-    }
-
-    // set value selectedId setelah semua option ada
-    if (selectedId) {
-      $select.val(selectedId).trigger("change"); // trigger change untuk select2
-    }
-
-    // inisialisasi select2 jika belum diinisialisasi
-    if (!$select.hasClass("select2-hidden-accessible")) {
-      $select.select2({ dropdownParent: $("#modal"), width: "100%" });
-    }
+function loadcbToko() {
+  $.getJSON(BASE_URL + "models/mdl_gettoko.php", function (return_data) {
+    $("store_id")
+      .empty()
+      .append('<option value="0">-- Semua Store (Admin) --</option>');
+    $.each(return_data.data, function (key, value) {
+      $("#store_id").append(
+        '<option value="' + value.id + '">' + value.name + "</option>",
+      );
+    });
+    $("#store_id").val("").trigger("change");
   });
 }
-$(document).ready(function () {
-  // jaminan event tetap aktif, meskipun element di-reload
-  $(document)
-    .off("change", "#invoice_number")
-    .on("change", "#invoice_number", function () {
-      let id = $(this).val();
-      console.log("Change event tertembak, id:", id);
-      $("#invoice_id").val(id); // isi hidden input supaya ke kirim ke BE
 
-      if (!id) {
-        $("#invoiceInfoBox").hide();
-        return;
+function loadcbSupplier() {
+  $.getJSON(BASE_URL + "models/mdl_getsuppliers.php", function (return_data) {
+    $("supplier_id")
+      .empty()
+      .append('<option value="0">-- Semua Supplier --</option>');
+    $.each(return_data.data, function (key, value) {
+      $("#supplier_id").append(
+        '<option value="' + value.id + '">' + value.name + "</option>",
+      );
+    });
+    $("#supplier_id").val("").trigger("change");
+  });
+}
+
+function loadcbGudang() {
+  $.getJSON(BASE_URL + "models/mdl_getgudang.php", function (return_data) {
+    $("warehouse_id")
+      .empty()
+      .append('<option value="0">-- Semua Gudang --</option>');
+    $.each(return_data.data, function (key, value) {
+      $("#warehouse_id").append(
+        '<option value="' + value.id + '">' + value.name + "</option>",
+      );
+    });
+    $("#warehouse_id").val("").trigger("change");
+  });
+}
+
+function loadProducts(selectElement, selectedId = null) {
+  $.get(
+    BASE_URL + "models/mdl_getproduk.php",
+    function (res) {
+      selectElement.empty();
+      selectElement.append('<option value="">-- Pilih Produk --</option>');
+
+      res.data.forEach(function (row) {
+        selectElement.append(`
+                <option value="${row.id}">
+                    ${row.sku} - ${row.name}
+                </option>
+            `);
+      });
+
+      // 🔥 Set value setelah option ada
+      if (selectedId) {
+        selectElement.val(selectedId).trigger("change");
       }
-
-      $.getJSON("models/mdl_getinvoiceinfo.php", { id: id }, function (res) {
-        console.log("Response dari BE:", res);
-        if (res.success) {
-          $("#infoTotal").text(
-            "Rp " + Number(res.data.total).toLocaleString("id-ID"),
-          );
-          $("#infoPaid").text(
-            "Rp " + Number(res.data.paid).toLocaleString("id-ID"),
-          );
-          $("#infoOutstanding").text(
-            "Rp " + Number(res.data.outstanding).toLocaleString("id-ID"),
-          );
-          $("#invoiceInfoBox").show();
-        } else {
-          alert(res.message);
-          $("#invoiceInfoBox").hide();
-        }
-      });
-    });
-});
-
-function loadcbjo() {
-  $.getJSON("models/mdl_getjoborder.php", function (return_data) {
-    $("#jo_number,#job_order_id")
-      .empty()
-      .append('<option value="">-- Pilih Job Order --</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#jo_number,#job_order_id").append(
-        '<option value="' + value.id + '">' + value.jo_number + "</option>",
-      );
-    });
-    $("#jo_number,#job_order_id").val("").trigger("change");
-  });
-}
-//load jo untuk expense operasional
-function loadJobOrderList() {
-  $.getJSON("models/mdl_getjoborder_open.php", function (res) {
-    const $sel = $("#job_order_id");
-    $sel.empty().append('<option value="">Pilih Job Order</option>');
-
-    if (res.success && res.data.length > 0) {
-      res.data.forEach((opt) => {
-        $sel.append(`<option value="${opt.id}">${opt.text}</option>`);
-      });
-    }
-    $sel.trigger("change");
-  });
-}
-//end load jo untuk operasioanl
-
-function loadcbinvoice() {
-  $.getJSON("models/mdl_getinvoicenumber.php", function (return_data) {
-    $("#invoice_number")
-      .empty()
-      .append('<option value="">-- Pilih Invoice --</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#invoice_number").append(
-        '<option value="' +
-          value.id +
-          '">' +
-          value.invoice_number +
-          "</option>",
-      );
-    });
-    $("#invoice_number").val("").trigger("change");
-  });
-}
-function loadcbrekcust() {
-  $.getJSON("models/mdl_getrekcust.php", function (return_data) {
-    $("#rekening_cust")
-      .empty()
-      .append('<option value="">-- Pilih Rekening --</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#rekening_cust").append(
-        '<option value="' +
-          value.id +
-          '">' +
-          " [" +
-          value.nama_cust +
-          "] " +
-          value.bank_name +
-          -value.account_number +
-          "</option>",
-      );
-    });
-    $("#rekening_cust").val("").trigger("change");
-  });
-}
-
-function loadcbCustomer() {
-  $.getJSON("models/mdl_getcustomer.php", function (return_data) {
-    $("#customer,#customer_id")
-      .empty()
-      .append('<option value="0">-- Pilih Customer --</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#customer,#customer_id").append(
-        '<option value="' + value.id + '">' + value.nama_cust + "</option>",
-      );
-    });
-    $("#customer,#customer_id").val("").trigger("change");
-  });
-}
-function loadcbVendor() {
-  $.getJSON("models/mdl_getvendor.php", function (return_data) {
-    $("#vendor").empty().append('<option value="">-- Pilih Vendor --</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#vendor").append(
-        '<option value="' + value.id + '">' + value.nama_vendor + "</option>",
-      );
-    });
-    $("#vendor").val("").trigger("change");
-  });
-}
-function loadcbInvestor() {
-  $.getJSON("models/mdl_getinvestor.php", function (return_data) {
-    $("#investor").empty().append('<option value="">Thoriq (100%)</option>');
-    $.each(return_data.data, function (key, value) {
-      $("#investor").append(
-        '<option value="' + value.id + '">' + value.fullname + "</option>",
-      );
-    });
-    $("#customer").val("").trigger("change");
-  });
-}
-
-function loadcbPengguna() {
-  $("#nama_pengguna").append("<option selected>Pilih Pengguna</option>");
-  $.getJSON("models/mdl_getPengguna.php", function (return_data) {
-    $.each(return_data.data, function (key, value) {
-      $("#nama_pengguna").append(
-        '<option value="' + value[1] + '">' + value[2] + "</option>",
-      );
-    });
-    $("#nama_pengguna").val("").trigger("change");
-  });
+    },
+    "json",
+  );
 }
 
 function doCallBack(halaman) {
@@ -1073,10 +988,10 @@ function doCallBack(halaman) {
             searchable: false,
           },
           {
-            data: "name"
+            data: "name",
           },
           {
-            data: "phone"
+            data: "phone",
           },
           { data: "discount_percent" },
           { data: "created_at" },
@@ -1106,6 +1021,214 @@ function doCallBack(halaman) {
         minimumResultsForSearch: Infinity,
       });
       break;
+    case "view_mastersuppliers":
+      console.log("Inisialisasi DataTable untuk halaman master supplier ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getsuppliers.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "name",
+          },
+          {
+            data: "phone",
+          },
+          { data: "address" },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modal"
+                                id="ubah" style="margin:2px"
+                                onclick="getID(${data})">
+                                <span class="fa fa-pencil"></span> Ubah
+                            </button>
+                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
+                                id="hapus" style="margin:2px"
+                                onclick="hapusData(${data},'${full.name}')">
+                                <span class="fa fa-trash-o"></span> Hapus
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      break;
+    case "view_masteruser":
+      console.log("Inisialisasi DataTable untuk halaman master user ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getuser.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "name",
+          },
+          {
+            data: "email",
+          },
+          { data: "role" },
+          { data: "store_id" },
+          { data: "is_active" },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modal"
+                                id="ubah" style="margin:2px"
+                                onclick="getID(${data})">
+                                <span class="fa fa-pencil"></span> Ubah
+                            </button>
+                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
+                                id="hapus" style="margin:2px"
+                                onclick="hapusData(${data},'${full.name}')">
+                                <span class="fa fa-trash-o"></span> Hapus
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      loadcbToko(); // load toko untuk dropdown filter di halaman user
+
+      break;
+    case "view_barangmasuk":
+      console.log("Inisialisasi DataTable untuk halaman pembelian ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getbarangmasuk.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "supplier_name",
+          },
+          {
+            data: "warehouse_name",
+          },
+          { data: "total" },
+          { data: "invoice_no" },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modal"
+                                id="ubah" style="margin:2px"
+                                onclick="getID(${data})">
+                                <span class="fa fa-pencil"></span> Ubah
+                            </button>
+                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
+                                id="hapus" style="margin:2px"
+                                onclick="hapusData(${data},'${full.supplier_name}')">
+                                <span class="fa fa-trash-o"></span> Hapus
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
   }
 }
 
@@ -1121,6 +1244,109 @@ function printInvoice(id) {
     win.print();
   };
 }
+
+//----------------------------------------------------------------------------Blok Barang Masuk-----------------------------------------------------------//
+function addBarangMasukRow() {
+  let index = $("#tblBarangMasuk tbody tr").length;
+
+  let row = `
+        <tr>
+            <td>
+                <select name="items[${index}][product_id]" 
+                        class="form-control product-select" required>
+                    <option value="">-- Pilih Produk --</option>
+                </select>
+            </td>
+
+            <td>
+                <input type="number"
+                       name="items[${index}][qty]"
+                       class="form-control qty"
+                       min="1" value="1">
+            </td>
+
+            <td>
+                <input type="number"
+                       name="items[${index}][cost_price]"
+                       class="form-control cost"
+                       min="0" value="0">
+            </td>
+
+            <td>
+                <input type="text"
+                       class="form-control subtotal text-right"
+                       readonly>
+            </td>
+
+            <td width="5%" align="center">
+                <button type="button"
+                        class="btn btn-danger btn-sm remove-row">
+                    Hapus
+                </button>
+            </td>
+        </tr>
+    `;
+
+  $("#tblBarangMasuk tbody").append(row);
+  let newRow = $("#tblBarangMasuk tbody tr:last .product-select");
+  loadProducts(newRow);
+  newRow.select2({
+    dropdownParent: $("#modal"),
+    width: "100%",
+  });
+}
+
+// reindex nama input saat baris dihapus atau ditambah agar tetap berurutan dan tidak ada index yang terlewat
+function reindexBarangMasuk() {
+  $("#tblBarangMasuk tbody tr").each(function (i) {
+    $(this).find(".product-select").attr("name", `items[${i}][product_id]`);
+
+    $(this).find(".qty").attr("name", `items[${i}][qty]`);
+
+    $(this).find(".cost").attr("name", `items[${i}][cost_price]`);
+  });
+}
+
+$(document).on("click", ".remove-row", function () {
+  $(this).closest("tr").remove();
+  reindexBarangMasuk();
+  updateBarangMasukTotal();
+});
+
+// update subtotal saat qty atau cost berubah
+$(document).on("input", ".qty, .cost", function () {
+  let row = $(this).closest("tr");
+
+  let qty = parseFloat(row.find(".qty").val()) || 0;
+  let cost = parseFloat(row.find(".cost").val()) || 0;
+
+  let subtotal = qty * cost;
+
+  row.find(".subtotal").val(subtotal.toLocaleString());
+
+  updateBarangMasukTotal();
+});
+
+// update total saat baris dihapus atau saat qty/cost berubah
+function updateBarangMasukTotal() {
+  let total = 0;
+
+  $("#tblBarangMasuk tbody tr").each(function () {
+    let qty = parseFloat($(this).find(".qty").val()) || 0;
+    let cost = parseFloat($(this).find(".cost").val()) || 0;
+
+    total += qty * cost;
+  });
+
+  $("#bm_total_display").val(total.toLocaleString("id-ID"));
+  $("#bm_total").val(total);
+}
+
+// hapus baris saat tombol hapus diklik
+$(document).on("click", ".remove-row", function () {
+  $(this).closest("tr").remove();
+  updateBarangMasukTotal();
+});
 
 //----------------------------------------------------------------------------Blok DML database-----------------------------------------------------------//
 
@@ -1215,6 +1441,27 @@ function getID(id = null) {
           el.val(response[key]);
         }
       });
+      // 🔥 Khusus barang masuk
+      if (response.items) {
+        $("#tblBarangMasuk tbody").empty();
+
+        response.items.forEach(function (item) {
+          addBarangMasukRow();
+
+          let row = $("#tblBarangMasuk tbody tr:last");
+          let select = row.find(".product-select");
+
+          loadProducts(select, item.product_id);
+
+          row.find(".qty").val(item.qty);
+          row.find(".cost").val(item.cost_price);
+
+          let subtotal = item.qty * item.cost_price;
+          row.find(".subtotal").val(subtotal.toLocaleString("id-ID"));
+        });
+
+        updateBarangMasukTotal();
+      }
 
       $("#modal").modal("show");
     },

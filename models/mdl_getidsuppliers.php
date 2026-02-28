@@ -14,8 +14,8 @@ if (!$id || !is_numeric($id)) {
     exit;
 }
 
-$sql = "SELECT  name, phone, discount_percent
-        FROM members
+$sql = "SELECT  id, name, phone, address, created_at
+        FROM suppliers
         WHERE id = :id";
 
 $result = $db->single($sql, [':id' => $id]);
