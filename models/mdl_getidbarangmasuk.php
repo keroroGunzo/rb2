@@ -1,6 +1,11 @@
 <?php
 require '../config/init.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
 header('Content-Type: application/json');
 
 $response = [

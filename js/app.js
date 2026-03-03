@@ -1430,24 +1430,13 @@ function doCallBack(halaman) {
             data: "created_at",
           },
           {
-            data: "id",
-            width: "10%",
-            render: function (data, type, full) {
-              //console.log(data, type, full);
-              return `<div align="center">
-                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
-                                data-toggle="modal" data-target="#modalDetailAdjustment"
-                                id="ubah" style="margin:2px"
-                                onclick="detailAdjustment(${data})">
-                                <span class="fa fa-pencil"></span> Detail
-                            </button>
-                        </div>`;
-            },
+            data: "note",
           },
         ],
       });
-
-      
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
       $("#modal select").select2({
         dropdownParent: $("#modal"),
         width: "100%",
@@ -1740,6 +1729,87 @@ function updateBarangMasukTotal() {
 $(document).on("click", ".remove-row", function () {
   $(this).closest("tr").remove();
   updateBarangMasukTotal();
+});
+
+//----------------------------------------------------------------------------Blok Adjustment UI select (berdasarkan location_type)-----------------------------------------------------------//
+
+$(document).on("change", '[name="location_type"]', function () {
+  let type = $(this).val();
+  let locationSelect = $('[name="location_id"]');
+  let productSelect = $('[name="product_id"]');
+
+  // reset dulu
+  locationSelect.empty().append('<option value="">Loading...</option>');
+  productSelect.empty().append('<option value="">-- Pilih Produk --</option>');
+
+  if (!type) {
+    locationSelect
+      .empty()
+      .append('<option value="">-- Pilih Lokasi --</option>');
+    return;
+  }
+
+  let url = type === "warehouse" ? "mdl_getgudang.php" : "mdl_gettoko.php";
+
+  $.get(
+    BASE_URL + "models/" + url,
+    function (res) {
+      locationSelect.empty();
+      locationSelect.append('<option value="">-- Pilih Lokasi --</option>');
+
+      res.data.forEach(function (row) {
+        locationSelect.append(`
+        <option value="${row.id}">
+          ${row.name}
+        </option>
+      `);
+      });
+
+      // refresh select2
+      locationSelect.trigger("change.select2");
+    },
+    "json",
+  );
+});
+
+//----------------------------------------------------------------------------Blok Adjustment UI select (berdasarkan stock)-----------------------------------------------------------//
+
+$(document).on("change", '[name="location_id"]', function () {
+  let type = $('[name="location_type"]').val();
+  let locId = $(this).val();
+  let productSelect = $('[name="product_id"]');
+
+  productSelect.empty().append('<option value="">Loading...</option>');
+
+  if (!type || !locId) {
+    productSelect
+      .empty()
+      .append('<option value="">-- Pilih Produk --</option>');
+    return;
+  }
+
+  $.get(
+    BASE_URL + "models/mdl_getstokbylokasi.php",
+    {
+      type: type,
+      id: locId,
+    },
+    function (res) {
+      productSelect.empty();
+      productSelect.append('<option value="">-- Pilih Produk --</option>');
+
+      res.data.forEach(function (row) {
+        productSelect.append(`
+        <option value="${row.product_id}">
+          ${row.sku} - ${row.name} (Stok: ${row.qty})
+        </option>
+      `);
+      });
+
+      productSelect.trigger("change.select2");
+    },
+    "json",
+  );
 });
 
 //----------------------------------------------------------------------------Blok DML database-----------------------------------------------------------//

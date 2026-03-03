@@ -31,7 +31,8 @@ include '../views/pageheader.php';
                         <th>Tipe</th>
                         <th>Qty</th>
                         <th>Created At</th>
-                        <th>Tanggal</th>
+                        <th>Note</th>
+                        
                     </tr>
                 </thead>
             </table>
@@ -54,6 +55,9 @@ include '../views/pageheader.php';
 
             <form id="frmAdjustment"
                 data-models="mdl_adjustment"
+                data-hapus="mdl_deleteadjustment"
+                data-getID="mdl_getidadjustment"
+                class="form-horizontal form-bordered"
                 action="javascript:;">
 
                 <div class="modal-body">

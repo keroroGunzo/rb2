@@ -20,6 +20,7 @@ try {
             sm.to_id,
             sm.qty,
             sm.created_at,
+            sm.note,
             p.name AS product_name,
             p.sku
         FROM stock_movements sm
@@ -49,7 +50,8 @@ try {
             'product'      => $row['sku'] . ' - ' . $row['product_name'],
             'type'         => $type,
             'qty'          => abs($row['qty']),
-            'created_at'   => $row['created_at']
+            'created_at'   => $row['created_at'],
+            'note'         => $row['note']
         ];
     }
 } catch (Exception $e) {
