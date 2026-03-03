@@ -101,9 +101,9 @@ if (!isset($_SESSION['user_id'])) {
           <span class="menu-item-label">Inventory</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_paymentreq" class="sub-link">Stok Saat Ini</a></li>
-          <li class="sub-item"><a href="view_aproval" class="sub-link">Transfer Barang</a></li>
-          <li class="sub-item"><a href="view_paymentreqpayment" class="sub-link">Penyesuaian Stok</a></li>
+          <li class="sub-item"><a href="view_stok" class="sub-link">Stok Saat Ini</a></li>
+          <li class="sub-item"><a href="view_transfer" class="sub-link">Transfer Barang</a></li>
+          <li class="sub-item"><a href="view_adjustment" class="sub-link">Penyesuaian Stok</a></li>
           <li class="sub-item"><a href="view_paymentreqpayment" class="sub-link">Riwayat Pergerakan</a></li>
         </ul>
       </li><!-- br-menu-item -->

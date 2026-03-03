@@ -43,25 +43,23 @@ function resetModalForm() {
 
 //fungsi reset modal barang masuk
 function resetBarangMasukModal() {
+  let modal = $("#modal");
 
-    let modal = $("#modal");
+  // 1️⃣ Reset seluruh form
+  modal.find("form")[0].reset();
 
-    // 1️⃣ Reset seluruh form
-    modal.find("form")[0].reset();
+  // 2️⃣ Kosongkan hidden id
+  modal.find("input[name='id']").val("");
 
-    // 2️⃣ Kosongkan hidden id
-    modal.find("input[name='id']").val('');
+  // 3️⃣ Reset select2 header
+  modal.find("select").val("").trigger("change");
 
-    // 3️⃣ Reset select2 header
-    modal.find("select").val('').trigger('change');
+  // 4️⃣ Kosongkan table item
+  $("#tblBarangMasuk tbody").empty();
 
-    // 4️⃣ Kosongkan table item
-    $("#tblBarangMasuk tbody").empty();
-
-    // 5️⃣ Reset total
-    $("#bm_total_display").val('');
-    $("#bm_total").val('');
-
+  // 5️⃣ Reset total
+  $("#bm_total_display").val("");
+  $("#bm_total").val("");
 }
 
 document.addEventListener("click", function (e) {
@@ -760,6 +758,26 @@ function loadProducts(selectElement, selectedId = null) {
     "json",
   );
 }
+function loadLocation(type, selectElement) {
+  let url = type === "warehouse" ? "mdl_getgudang.php" : "mdl_gettoko.php";
+
+  $.get(
+    BASE_URL + "models/" + url,
+    function (res) {
+      selectElement.empty();
+      selectElement.append('<option value="">-- Pilih --</option>');
+
+      res.data.forEach(function (row) {
+        selectElement.append(`
+        <option value="${row.id}">
+          ${row.name}
+        </option>
+      `);
+      });
+    },
+    "json",
+  );
+}
 
 function doCallBack(halaman) {
   switch (halaman) {
@@ -1229,6 +1247,214 @@ function doCallBack(halaman) {
       loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
       loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
       break;
+    case "view_stok":
+      console.log("Inisialisasi DataTable untuk halaman stok ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getstok.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "sku",
+          },
+          {
+            data: "product_name",
+          },
+          {
+            data: "location_type",
+          },
+          {
+            data: "location_name",
+          },
+          {
+            data: "stock_status",
+          },
+          { data: "qty" },
+          { data: "updated_at" },
+        ],
+      });
+
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
+    case "view_transfer":
+      console.log("Inisialisasi DataTable untuk halaman transfer ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_gettransfer.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "from_name",
+          },
+          {
+            data: "to_name",
+          },
+          {
+            data: "total_item",
+          },
+          {
+            data: "total_qty",
+          },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "10%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modalDetailTransfer"
+                                id="ubah" style="margin:2px"
+                                onclick="detailTransfer(${data})">
+                                <span class="fa fa-pencil"></span> Detail
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
+    case "view_adjustment":
+      console.log("Inisialisasi DataTable untuk halaman adjustment ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getadjustment.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "location",
+          },
+          {
+            data: "product",
+          },
+          {
+            data: "type",
+            render: function (data) {
+              if (data === "Tambah") {
+                return '<span class="badge badge-success">Tambah</span>';
+              }
+              return '<span class="badge badge-danger">Kurang</span>';
+            },
+          },
+          {
+            data: "qty",
+          },
+          {
+            data: "created_at",
+          },
+          {
+            data: "id",
+            width: "10%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modalDetailAdjustment"
+                                id="ubah" style="margin:2px"
+                                onclick="detailAdjustment(${data})">
+                                <span class="fa fa-pencil"></span> Detail
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+
+      
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
   }
 }
 
@@ -1295,6 +1521,174 @@ function addBarangMasukRow() {
     width: "100%",
   });
 }
+
+//----------------------------------------------------------------------------Blok Transfer-----------------------------------------------------------//
+
+function lockFromLocation(lock = true) {
+  let fromType = $('[name="from_type"]');
+  let fromId = $('[name="from_id"]');
+
+  if (lock) {
+    fromType.next(".select2").css({
+      "pointer-events": "none",
+      opacity: "0.7",
+    });
+
+    fromId.next(".select2").css({
+      "pointer-events": "none",
+      opacity: "0.7",
+    });
+  } else {
+    fromType.next(".select2").css({
+      "pointer-events": "",
+      opacity: "",
+    });
+
+    fromId.next(".select2").css({
+      "pointer-events": "",
+      opacity: "",
+    });
+  }
+}
+
+$(document).on("click", ".remove-row", function () {
+  //unlock lokasi asal saat baris transfer dihapus, jika tidak ada baris tersisa
+  $(this).closest("tr").remove();
+
+  let remaining = $("#tblTransfer tbody tr").length;
+
+  if (remaining === 0) {
+    lockFromLocation(false);
+  }
+});
+
+function addTransferRow() {
+  let fromType = $('[name="from_type"]').val();
+  let fromId = $('[name="from_id"]').val();
+
+  if (!fromType || !fromId) {
+    alert("Pilih lokasi asal dulu.");
+    return;
+  }
+
+  let index = $("#tblTransfer tbody tr").length;
+
+  let row = `
+    <tr>
+      <td>
+        <select name="items[${index}][product_id]"
+                class="form-control product-select"
+                required>
+          <option value="">Loading...</option>
+        </select>
+      </td>
+      <td>
+        <input type="number"
+               name="items[${index}][qty]"
+               class="form-control"
+               min="1"
+               value="1"
+               required>
+      </td>
+      <td align="center">
+        <button type="button"
+                class="btn btn-danger btn-sm remove-row">
+          Hapus
+        </button>
+      </td>
+    </tr>
+  `;
+
+  $("#tblTransfer tbody").append(row);
+
+  // 🔥 LOCK lokasi setelah item pertama
+  lockFromLocation(true);
+
+  let select = $("#tblTransfer tbody tr:last .product-select");
+
+  $.get(
+    BASE_URL + "models/mdl_getstokbylokasi.php",
+    {
+      type: fromType,
+      id: fromId,
+    },
+    function (res) {
+      select.empty();
+      select.append('<option value="">-- Pilih Produk --</option>');
+
+      res.data.forEach(function (row) {
+        select.append(`
+            <option value="${row.product_id}">
+              ${row.sku} - ${row.name} (Stok: ${row.qty})
+            </option>
+          `);
+      });
+    },
+    "json",
+  );
+
+  select.select2({
+    dropdownParent: select.closest(".modal"),
+    width: "100%",
+  });
+}
+
+$(document).on("change", '[name="from_type"]', function () {
+  loadLocation($(this).val(), $('[name="from_id"]'));
+});
+
+$(document).on("change", '[name="to_type"]', function () {
+  loadLocation($(this).val(), $('[name="to_id"]'));
+});
+
+function resetTransferModal() {
+  let modal = $("#modal");
+
+  modal.find("form")[0].reset();
+  modal.find("select").val("").trigger("change");
+  $("#tblTransfer tbody").empty();
+}
+
+$(document).on("change", '[name="from_type"], [name="from_id"]', function () {
+  let type = $('[name="from_type"]').val();
+  let id = $('[name="from_id"]').val();
+
+  if (type && id) {
+    $("#btnAddTransfer").prop("disabled", false);
+  }
+});
+
+// fungsi untuk menampilkan detail transfer saat tombol detail diklik
+function detailTransfer(id) {
+  $.get(
+    BASE_URL + "models/mdl_gettransferdetail.php",
+    { id: id },
+    function (res) {
+      if (!res.success) {
+        alert(res.message);
+        return;
+      }
+
+      let tbody = $("#detailTransferBody");
+      tbody.empty();
+
+      res.data.forEach(function (row) {
+        tbody.append(`
+        <tr>
+          <td>${row.sku}</td>
+          <td>${row.name}</td>
+          <td>${row.qty}</td>
+        </tr>
+      `);
+      });
+
+      $("#modalDetailTransfer").modal("show");
+    },
+    "json",
+  );
+}
+
+//----------------------------------------------------------------------------Blok Barang Masuk & Transfer (shared)-----------------------------------------------------------//
 
 // reindex nama input saat baris dihapus atau ditambah agar tetap berurutan dan tidak ada index yang terlewat
 function reindexBarangMasuk() {
