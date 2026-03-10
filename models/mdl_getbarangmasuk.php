@@ -29,7 +29,7 @@ try {
             'supplier_name' => $row['supplier_name'],
             'warehouse_name' => $row['warehouse_name'],
             'total'       => $row['total'],
-            'created_at'  => $row['created_at'],
+            'created_at'  => date('d M Y H:i:s', strtotime($row['created_at'])),
             'invoice_no'  => $row['invoice_no']
         ];
     }

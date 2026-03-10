@@ -47,7 +47,7 @@ ORDER BY MAX(sm.created_at) DESC
             'to_name'     => $toName,
             'total_item'  => $row['total_item'],
             'total_qty'   => $row['total_qty'],
-            'created_at'  => $row['created_at']
+            'created_at'  => date('d M Y H:i:s', strtotime($row['created_at'])),
         ];
     }
 } catch (Exception $e) {

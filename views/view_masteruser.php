@@ -43,18 +43,18 @@ include '../views/pageheader.php';
                     Master User
                 </h6>
                 <button type="button" class="close"
-                        data-dismiss="modal"
-                        onclick="resetModalForm('#modalUser')">
+                    data-dismiss="modal"
+                    onclick="resetModalForm('#modalUser')">
                     <span>&times;</span>
                 </button>
             </div>
 
-            <form method="post" id="frm" name="frm" data-models="mdl_masteruser" data-hapus="mdl_deleteuser" data-getID="mdl_getiduser" action=" javascript:" class="form-horizontal form-bordered">
+            <form method="post" id="frm" name="frm" data-models="mdl_masteruser" data-hapus="mdl_deleteuser" data-getID="mdl_getiduser" data-hapus="mdl_deleteuser" action=" javascript:" class="form-horizontal form-bordered">
 
                 <div class="modal-body pd-25">
                     <div class="form-layout">
 
-                        <input type="hidden" name="id" id="user_id">
+                        <input type="hidden" name="id" id="user_id" data-json = "id">
 
                         <div class="row">
 
@@ -63,9 +63,9 @@ include '../views/pageheader.php';
                                 <div class="form-group">
                                     <label>Nama <span class="tx-danger">*</span></label>
                                     <input type="text"
-                                           class="form-control"
-                                           name="name"
-                                           required data-json = "name">
+                                        class="form-control"
+                                        name="name"
+                                        required data-json="name">
                                 </div>
                             </div>
 
@@ -74,21 +74,21 @@ include '../views/pageheader.php';
                                 <div class="form-group">
                                     <label>Email <span class="tx-danger">*</span></label>
                                     <input type="email"
-                                           class="form-control"
-                                           name="email"
-                                           required data-json="email">
+                                        class="form-control"
+                                        name="email"
+                                        required data-json="email">
                                 </div>
                             </div>
 
                             <!-- PASSWORD -->
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label>Password 
+                                    <label>Password
                                         <small class="text-muted">(Kosongkan jika tidak diubah)</small>
                                     </label>
                                     <input type="password"
-                                           class="form-control"
-                                           name="password">
+                                        class="form-control"
+                                        name="password">
                                 </div>
                             </div>
 
@@ -96,12 +96,12 @@ include '../views/pageheader.php';
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label>Role <span class="tx-danger">*</span></label>
-                                    <select name="role" 
-                                            class="form-control select2"
-                                            required data-json = "role">
+                                    <select name="role"
+                                        class="form-control select2"
+                                        required data-json="role">
                                         <option value="">-- Pilih Role --</option>
                                         <option value="admin">Admin</option>
-                                        <option value="cashier">Cashier</option> 
+                                        <option value="cashier">Cashier</option>
                                     </select>
                                 </div>
                             </div>
@@ -111,9 +111,9 @@ include '../views/pageheader.php';
                                 <div class="form-group">
                                     <label class="form-control-label">Store</label>
                                     <select name="store_id" id="store_id"
-                                            class="form-control select2"
-                                            data-json="store_id">
-                                            <option value="">-- Semua Store (Admin) --</option>
+                                        class="form-control select2"
+                                        data-json="store_id">
+                                        <option value="">-- Semua Store (Admin) --</option>
                                         <!-- load via AJAX -->
                                     </select>
                                 </div>
@@ -124,8 +124,8 @@ include '../views/pageheader.php';
                                 <div class="form-group">
                                     <label>Status</label>
                                     <select name="is_active"
-                                            class="form-control select2"
-                                            data-json="is_active">
+                                        class="form-control select2"
+                                        data-json="is_active">
                                         <option value="1">Aktif</option>
                                         <option value="0">Non Aktif</option>
                                     </select>
@@ -139,13 +139,13 @@ include '../views/pageheader.php';
 
                 <div class="modal-footer">
                     <button class="btn btn-info"
-                            onclick="insertFormdata('frm')">
+                        onclick="insertFormdata('frm')">
                         Simpan
                     </button>
                     <button type="button"
-                            class="btn btn-secondary"
-                            data-dismiss="modal"
-                            onclick="resetModalForm('#modal')">
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                        onclick="resetModalForm('#modal')">
                         Batal
                     </button>
                 </div>

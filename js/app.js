@@ -1300,12 +1300,6 @@ function doCallBack(halaman) {
       $(".dataTables_length select").select2({
         minimumResultsForSearch: Infinity,
       });
-      $("#modal select").select2({
-        dropdownParent: $("#modal"),
-        width: "100%",
-      });
-      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
-      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
       break;
     case "view_transfer":
       console.log("Inisialisasi DataTable untuk halaman transfer ...");
@@ -1443,6 +1437,71 @@ function doCallBack(halaman) {
       });
       loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
       loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
+    case "view_riwayat":
+      console.log("Inisialisasi DataTable untuk halaman riwayat ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getmovement.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "date",
+          },
+          {
+            data: "product",
+          },
+          {
+            data: "from",
+          },
+          {
+            data: "to",
+          },
+          {
+            data: "qty",
+          },
+          {
+            data: "type",
+          },
+          {
+            data: "user",
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
+      break;
+    case "view_penjualan":
+      console.log("Inisialisasi DataTable untuk halaman riwayat ...");
+      $("select").select2({
+        //dropdownParent: $("#modal"),
+        width: "100%",
+      });
       break;
   }
 }
@@ -1811,6 +1870,317 @@ $(document).on("change", '[name="location_id"]', function () {
     "json",
   );
 });
+
+//----------------------------------------------------------------------------Blok Pos Function-----------------------------------------------------------//
+function loadProductPicker() {
+  $.get(
+    BASE_URL + "models/mdl_getproduklist.php",
+    function (res) {
+      let html = "";
+
+      res.data.forEach((p) => {
+        html += `
+<div class="col-md-4">
+
+<div class="product-card"
+onclick='selectProduct(${JSON.stringify(p)})'>
+
+<div class="product-sku">${p.sku}</div>
+
+<div class="product-name">${p.name}</div>
+
+<div class="product-price">
+Rp ${formatRupiah(p.price_retail)}
+</div>
+
+</div>
+
+</div>
+`;
+      });
+
+      $("#productGrid").html(html);
+    },
+    "json",
+  );
+}
+
+$(document).on("shown.bs.modal","#modalProduk",function(){
+    loadProductPicker();
+});
+
+function selectProduct(product) {
+  // fungsi untuk menambahkan produk ke cart saat dipilih dari modal
+  addToCart(product);
+
+  $("#modalProduk").modal("hide");
+
+  $("#scan_barcode").focus();
+}
+
+function formatRupiah(angka) {
+  //fungsi untuk format angka ke rupiah, misal 10000 jadi 10.000
+  let number_string = angka.replace(/[^,\d]/g, "").toString();
+  let split = number_string.split(",");
+  let sisa = split[0].length % 3;
+  let rupiah = split[0].substr(0, sisa);
+  let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+  if (ribuan) {
+    let separator = sisa ? "." : "";
+    rupiah += separator + ribuan.join(".");
+  }
+
+  return rupiah;
+}
+$(document).on("input", "#sale_pay", function () {
+  let raw = $(this).val().replace(/\D/g, "");
+
+  if (raw === "") {
+    $(this).val("");
+    $("#sale_change").val(0);
+    return;
+  }
+
+  let formatted = formatRupiah(raw);
+
+  $(this).val(formatted);
+
+  calculateChange();
+});
+
+$("#scan_barcode").autocomplete({
+  // aktifkan autocomplete pada input barcode dengan jQuery UI Autocomplete
+  minLength: 1,
+
+  source: function (request, response) {
+    $.get(
+      BASE_URL + "models/mdl_searchproduct.php",
+      { term: request.term },
+      function (data) {
+        response(data);
+      },
+      "json",
+    );
+  },
+
+  select: function (event, ui) {
+    addToCart(ui.item.product);
+
+    $("#scan_barcode").val("");
+
+    return false;
+  },
+});
+
+$(document).on("keydown", "#scan_barcode", function (e) {
+  if (e.key !== "Enter") return;
+
+  e.preventDefault();
+
+  let barcode = $(this).val().trim();
+
+  console.log("SCAN:", barcode);
+
+  if (!barcode) return;
+
+  $.get(
+    BASE_URL + "models/mdl_getproductbarcode.php",
+    { barcode: barcode },
+    function (res) {
+      console.log(res);
+
+      if (!res.success) {
+        alert("Produk tidak ditemukan");
+        return;
+      }
+
+      addToCart(res.data);
+    },
+    "json",
+  );
+
+  $(this).val("");
+});
+
+//fungsi untuk menambahkan produk ke cart saat barcode discan atau saat dipilih dari dropdown, jika produk sudah ada di cart maka qty ditambah 1, jika belum ada maka produk ditambahkan ke cart dengan qty 1
+let saleCart = [];
+
+function addToCart(product) {
+  let index = saleCart.findIndex((p) => p.product_id == product.id);
+
+  if (index !== -1) {
+    saleCart[index].qty++;
+  } else {
+    saleCart.push({
+      product_id: product.id,
+      name: product.name,
+      price: product.price_retail,
+      qty: 1,
+    });
+  }
+
+  renderCart();
+}
+
+// fungsi render table cart berdasarkan data di saleCart, menghitung subtotal dan total, serta menampilkan di UI
+function renderCart() {
+  let tbody = $("#tblSale tbody");
+  tbody.empty();
+
+  let subtotal = 0;
+
+  saleCart.forEach((item, i) => {
+    let sub = item.price * item.qty;
+    subtotal += sub;
+
+    tbody.append(`
+      <tr>
+        <td>${i + 1}</td>
+        <td>${item.name}</td>
+        <td>${formatRupiah(item.price)}</td>
+        <td>
+          <input type="number"
+                 class="form-control qty-input"
+                 data-index="${i}"
+                 value="${item.qty}"
+                 min="1">
+        </td>
+        <td>${formatRupiah(sub)}</td>
+        <td>
+          <button class="btn btn-danger btn-sm"
+                  onclick="removeItem(${i})">
+          x
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+
+  $("#sale_subtotal").text(formatRupiah(subtotal));
+
+  calculateTotal();
+}
+
+// fungsi update qty di cart saat input qty diubah, dengan validasi minimal 1, lalu render ulang cart
+$(document).on("change", ".qty-input", function () {
+  let i = $(this).data("index");
+  let qty = parseInt($(this).val());
+
+  if (qty < 1) qty = 1;
+
+  saleCart[i].qty = qty;
+
+  renderCart();
+});
+
+// fungsi untuk menghapus item dari cart berdasarkan index, lalu render ulang cart
+function removeItem(i) {
+  saleCart.splice(i, 1);
+  renderCart();
+}
+
+// fungsi untuk menghitung total akhir setelah diskon, dan menampilkan di UI
+function calculateTotal() {
+  let subtotal = 0;
+
+  saleCart.forEach((item) => {
+    subtotal += item.price * item.qty;
+  });
+
+  let discount = parseFloat($("#sale_discount").val()) || 0;
+
+  let grand = subtotal - discount;
+
+  $("#sale_grandtotal").text(formatRupiah(grand));
+
+  calculateChange();
+}
+
+//fungsi hitung kembalian saat input pembayaran diubah, dengan validasi minimal 0, lalu tampilkan di UI
+$("#sale_pay").on("keyup", calculateChange);
+
+function calculateChange() {
+  let subtotal = 0;
+
+  saleCart.forEach((item) => {
+    subtotal += item.price * item.qty;
+  });
+
+  let discount = parseFloat($("#sale_discount").val()) || 0;
+
+  let grand = subtotal - discount;
+
+  let pay = $("#sale_pay").val().replace(/\./g, "");
+
+  pay = parseFloat(pay) || 0;
+
+  let change = pay - grand;
+
+  if (change < 0) change = 0;
+
+  $("#sale_change").val(formatRupiah(change));
+}
+
+// fungsi untuk menghitung ulang kembalian saat diskon diubah, karena total akhir akan berubah
+$(document).on("keyup", "#sale_pay", function () {
+  calculateChange();
+});
+
+$(document).on("keyup", "#sale_discount", function () {
+  calculateTotal();
+});
+
+// fungsi untuk menyimpan transaksi penjualan, dengan payload berisi data item di cart, diskon, dan pembayaran, lalu kirim ke server dengan AJAX POST, jika berhasil maka cart dikosongkan dan UI direset
+function saveSale() {
+  if (saleCart.length === 0) {
+    alert("Tidak ada item");
+    return;
+  }
+
+  let payload = {
+    items: saleCart,
+    discount: $("#sale_discount").val(),
+    pay: $("#sale_pay").val(),
+    payment_method: $("#sale_payment_method").val(),
+  };
+
+  $.ajax({
+    url: BASE_URL + "models/mdl_sale.php",
+    type: "POST",
+    data: JSON.stringify(payload),
+    contentType: "application/json",
+    dataType: "json",
+
+    success: function (res) {
+
+      if (res.success) {
+
+        // 🧾 PRINT TANPA BUKA TAB
+        $("#printFrame").attr(
+          "src",
+          BASE_URL + "views/sales/print_struk.php?id=" + res.sale_id
+        );
+
+        saleCart = [];
+        renderCart();
+
+        $("#sale_pay").val("");
+        $("#sale_discount").val(0);
+
+        $("#scan_barcode").focus();
+
+      } else {
+        alert(res.message);
+      }
+    }
+  });
+}
+
+// fungsi untuk format angka ke format rupiah, misal 10000 jadi 10.000
+function formatRupiah(num) {
+  return new Intl.NumberFormat("id-ID").format(num);
+}
 
 //----------------------------------------------------------------------------Blok DML database-----------------------------------------------------------//
 
