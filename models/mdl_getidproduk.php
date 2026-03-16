@@ -14,7 +14,7 @@ if (!$id || !is_numeric($id)) {
     exit;
 }
 
-$sql = "SELECT sku, barcode, name AS nama_produk, price_retail AS harga_retail, price_wholesale AS harga_grosir, min_wholesale_qty AS jumlah_minimal_grosir, cost_price AS harga_beli
+$sql = "SELECT id,sku, barcode, name, price_retail, price_wholesale, min_wholesale_qty , last_cost, avg_cost 
         FROM products 
         WHERE id = :id";
 
