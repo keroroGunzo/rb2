@@ -22,8 +22,9 @@ include '../views/pageheader.php';
                         <th>NAMA PRODUK</th>
                         <th>HARGA RETAIL</th>
                         <th>HARGA GROSIR</th>
-                        <th>JUMLAH MINIMAL GROSIR</th>
-                        <th>HARGA BELI (Cost)</th>
+                        <th>QTY MINIMAL GROSIR</th>
+                        <th>LAST COST</th>
+                        <th>AVG COST</th>
                         <th>CREATED AT</th>
                         <th>AKSI</th>
                     </tr>
@@ -66,15 +67,14 @@ include '../views/pageheader.php';
                         <div class="row mg-b-25">
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <input type="hidden" name="id" id="id" data-json = "id">
                                     <label class="form-control-label">NAMA PRODUK :<span class="tx-danger">*</span></label>
-                                    <input class="form-control" type="text" name="nama_produk" data-json="nama_produk">
+                                    <input class="form-control" type="text" name="name" data-json="name">
                                 </div>
                             </div><!-- col-6 -->
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">HARGA RETAIL :<span class="tx-danger">*</span></label>
-                                    <input class="form-control" type="text" name="harga_retail" data-json="harga_retail">
+                                    <input class="form-control" type="text" name="price_retail" data-json="price_retail">
                                 </div>
                             </div><!-- col-6 -->                            
                         </div><!-- row -->
@@ -83,29 +83,36 @@ include '../views/pageheader.php';
                                 <div class="form-group">
                                     <input type="hidden" name="id" id="id" data-json = "id">
                                     <label class="form-control-label">HARGA GROSIR : <span class="tx-danger">*</span></label>
-                                    <input class="form-control" type="text" name="harga_grosir" data-json="harga_grosir">
+                                    <input class="form-control" type="text" name="price_wholesale" data-json="price_wholesale">
                                 </div>
                             </div><!-- col-6 -->
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">JUMLAH MINIMAL GROSIR :<span class="tx-danger">*</span></label>
-                                    <input class="form-control" type="text" name="jumlah_minimal_grosir" data-json="jumlah_minimal_grosir">
+                                    <input class="form-control" type="text" name="min_wholesale_qty" data-json="min_wholesale_qty">
                                 </div>
                             </div><!-- col-6 -->                            
                         </div><!-- row -->
                         <div class="row mg-b-25">
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <input type="hidden" name="id" id="id" data-json = "id">
-                                    <label class="form-control-label">HARGA BELI : <span class="tx-danger">*</span></label>
-                                    <input class="form-control" type="text" name="harga_beli" data-json="harga_beli">
+                                    <label class="form-control-label">HARGA BELI TERAKHIR : <span class="tx-danger">*</span></label>
+                                    <input class="form-control" type="text" name="last_cost" data-json="last_cost" readonly>
                                 </div>
-                            </div><!-- col-6 -->                      
+                            </div><!-- col-6 -->  
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">AVG COST : <span class="tx-danger">*</span></label>
+                                    <input class="form-control" type="text" name="avg_cost" data-json="avg_cost" readonly>
+                                </div>
+                            </div><!-- col-6 -->                         
+                        </div><!-- row -->
+                                         
                         </div><!-- row -->
                         <div class="form-layout-footer">
                             <button class="btn btn-info" id="simpanData"
                                 onclick="insertFormdata('frm')">Simpan</button>
-                            <button class="btn btn-secondary" data-dismiss="modal" onclick="resetModalForm() ">Batal</button>
+                            <button class="btn btn-secondary" data-dismiss="modal" onclick="resetModalForm()">Batal</button>
                         </div><!-- form-layout-footer -->
                     </div><!-- form-layout -->
                 </div>

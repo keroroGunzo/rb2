@@ -778,6 +778,37 @@ function loadLocation(type, selectElement) {
     "json",
   );
 }
+function loadReturnableItems(purchase_id) {
+  // 🔥 parameter purchase_id untuk ambil item yang bisa direturn
+  $.ajax({
+    url: BASE_URL + "models/mdl_get_returnable_items.php",
+    type: "GET",
+    data: { purchase_id: purchase_id },
+    dataType: "json",
+    success: function (res) {
+      let tbody = $("#tblReturnItems tbody");
+      tbody.empty();
+
+      res.data.forEach((row, i) => {
+        tbody.append(`
+          <tr>
+            <td>${row.name}</td>
+            <td>${row.purchased_qty}</td>
+            <td>${row.returned_qty}</td>
+            <td>${row.remaining_qty}</td>
+            <td>
+              <input type="number"
+                     class="form-control return-qty"
+                     data-id="${row.purchase_item_id}"
+                     max="${row.remaining_qty}"
+                     min="0">
+            </td>
+          </tr>
+        `);
+      });
+    },
+  });
+}
 
 function doCallBack(halaman) {
   switch (halaman) {
@@ -947,7 +978,8 @@ function doCallBack(halaman) {
           { data: "price_retail" },
           { data: "price_wholesale" },
           { data: "min_wholesale_qty" },
-          { data: "cost_price" },
+          { data: "last_cost" },
+          { data: "avg_cost" },
           { data: "created_at" },
           {
             data: "id",
@@ -1213,25 +1245,49 @@ function doCallBack(halaman) {
           },
           { data: "total" },
           { data: "invoice_no" },
+          {
+            data: "return_status",
+            render: function (data) {
+              if (data === "FULL RETURN") {
+                return `<span class="badge badge-danger">FULL RETURN</span>`;
+              }
+              if (data === "PARTIAL RETURN") {
+                return `<span class="badge badge-warning">PARTIAL</span>`;
+              }
+              return `<span class="badge badge-success">OPEN</span>`;
+            },
+          },
           { data: "created_at" },
           {
             data: "id",
             width: "20%",
             render: function (data, type, full) {
-              //console.log(data, type, full);
+              let btnReturn = `
+                <button type="button" class="btn btn-oblong btn-sm btn-warning"
+                    style="margin:2px"
+                    onclick="openReturnModal(${data})">
+                    <span class="fa fa-undo"></span> Retur
+                </button>`;
+
+              if (full.return_status === "FULL RETURN") {
+                btnReturn = `
+                  <button type="button" class="btn btn-oblong btn-sm btn-secondary"
+                      style="margin:2px"
+                      disabled>
+                      <span class="fa fa-ban"></span> Full Returned
+                  </button>`;
+              }
+
               return `<div align="center">
-                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
-                                data-toggle="modal" data-target="#modal"
-                                id="ubah" style="margin:2px"
-                                onclick="getID(${data})">
-                                <span class="fa fa-pencil"></span> Ubah
-                            </button>
-                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
-                                id="hapus" style="margin:2px"
-                                onclick="hapusData(${data},'${full.supplier_name}')">
-                                <span class="fa fa-trash-o"></span> Hapus
-                            </button>
-                        </div>`;
+                  <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                      data-toggle="modal"
+                      data-target="#modal"
+                      style="margin:2px"
+                      onclick="getID(${data})">
+                      <span class="fa fa-pencil"></span> Ubah
+                  </button>
+                  ${btnReturn}
+              </div>`;
             },
           },
         ],
@@ -1502,6 +1558,156 @@ function doCallBack(halaman) {
         //dropdownParent: $("#modal"),
         width: "100%",
       });
+      break;
+    case "view_purchase_return":
+      console.log("Inisialisasi DataTable untuk halaman retur pembelian ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getpurchase_return.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "purchase_id",
+          },
+          {
+            data: "supplier_name", // dari maseter supplier
+          },
+          { data: "warehouse_name" }, // dari master warehouse
+          { data: "return_date" },
+          { data: "total" },
+          { data: "note" },
+          { data: "created_by" },
+          { data: "created_at" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              let btnReturn = `
+                  <button class="btn btn-warning btn-sm"
+                    onclick="openSaleReturnModal(${data})">
+                    Retur
+                  </button>`;
+
+              if (full.return_status === "FULL RETURN") {
+                btnReturn = `
+                  <button class="btn btn-secondary btn-sm" disabled>
+                    Full Returned
+                  </button>`;
+              }
+            },
+          },
+        ],
+      });
+
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      break;
+    case "view_historysales":
+      console.log("Inisialisasi DataTable untuk halaman pembelian ...");
+      $("#datatable1").DataTable({
+        scrollX: false, // kasih horizontal scroll
+        responsive: true,
+        columnDefs: [
+          { responsivePriority: 1, targets: 0 }, // kolom pertama (NO) selalu tampil
+          { responsivePriority: 2, targets: 1 }, // kolom nama diprioritaskan
+        ],
+        language: {
+          searchPlaceholder: "Search...",
+          sSearch: "",
+          lengthMenu:
+            '<span class="mr-2">Show</span> _MENU_ <span class="ml-2">items/page</span>',
+        },
+        ajax: {
+          url: BASE_URL + "models/mdl_getsales.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          {
+            data: "no", // <-- nomor urut
+            width: "5%",
+          },
+          {
+            data: "id",
+            visible: false,
+            searchable: false,
+          },
+          {
+            data: "invoice_no",
+          },
+          {
+            data: "created_at",
+          },
+          { data: "store_name" },
+          { data: "cashier_name" },
+          { data: "total" },
+          { data: "discount" },
+          { data: "grand_total" },
+          { data: "payment_method" },
+          {
+            data: "return_status",
+            render: function (data) {
+              if (data === "FULL RETURN") {
+                return `<span class="badge badge-danger">FULL</span>`;
+              }
+              if (data === "PARTIAL RETURN") {
+                return `<span class="badge badge-warning">PARTIAL</span>`;
+              }
+              return `<span class="badge badge-success">OPEN</span>`;
+            },
+          },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              return `<div align="center">
+          <button class="btn btn-sm btn-info" onclick="openSaleReturnModal(${data})">
+            Retur
+          </button>
+        </div>`;
+            },
+          },
+        ],
+      });
+
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
+      loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
       break;
   }
 }
@@ -1905,8 +2111,8 @@ Rp ${formatRupiah(p.price_retail)}
   );
 }
 
-$(document).on("shown.bs.modal","#modalProduk",function(){
-    loadProductPicker();
+$(document).on("shown.bs.modal", "#modalProduk", function () {
+  loadProductPicker();
 });
 
 function selectProduct(product) {
@@ -2007,6 +2213,7 @@ $(document).on("keydown", "#scan_barcode", function (e) {
 let saleCart = [];
 
 function addToCart(product) {
+  // modifikasi untuk support penjualan secara grosir dengan cek min_wholesale_qty dan price_wholesale
   let index = saleCart.findIndex((p) => p.product_id == product.id);
 
   if (index !== -1) {
@@ -2015,15 +2222,33 @@ function addToCart(product) {
     saleCart.push({
       product_id: product.id,
       name: product.name,
+      price_retail: product.price_retail,
+      price_wholesale: product.price_wholesale,
+      min_wholesale_qty: product.min_wholesale_qty,
       price: product.price_retail,
       qty: 1,
+      is_wholesale: false,
     });
+    console.log("Added to cart:", product);
   }
 
+  applyPricing(index !== -1 ? index : saleCart.length - 1);
   renderCart();
 }
 
 // fungsi render table cart berdasarkan data di saleCart, menghitung subtotal dan total, serta menampilkan di UI
+function applyPricing(i) {
+  let item = saleCart[i];
+
+  if (item.min_wholesale_qty > 0 && item.qty >= item.min_wholesale_qty) {
+    item.price = item.price_wholesale;
+    item.is_wholesale = true;
+  } else {
+    item.price = item.price_retail;
+    item.is_wholesale = false;
+  }
+}
+
 function renderCart() {
   let tbody = $("#tblSale tbody");
   tbody.empty();
@@ -2037,7 +2262,10 @@ function renderCart() {
     tbody.append(`
       <tr>
         <td>${i + 1}</td>
-        <td>${item.name}</td>
+        <td>
+        ${item.name}
+        ${item.is_wholesale ? '<span class="badge badge-success ml-1">GROSIR</span>' : ""}
+      </td>
         <td>${formatRupiah(item.price)}</td>
         <td>
           <input type="number"
@@ -2046,7 +2274,9 @@ function renderCart() {
                  value="${item.qty}"
                  min="1">
         </td>
-        <td>${formatRupiah(sub)}</td>
+        <td style="${item.is_wholesale ? "color:green;font-weight:bold" : ""}">
+          ${formatRupiah(item.price)}
+        </td>
         <td>
           <button class="btn btn-danger btn-sm"
                   onclick="removeItem(${i})">
@@ -2070,7 +2300,7 @@ $(document).on("change", ".qty-input", function () {
   if (qty < 1) qty = 1;
 
   saleCart[i].qty = qty;
-
+  applyPricing(i);
   renderCart();
 });
 
@@ -2153,13 +2383,11 @@ function saveSale() {
     dataType: "json",
 
     success: function (res) {
-
       if (res.success) {
-
         // 🧾 PRINT TANPA BUKA TAB
         $("#printFrame").attr(
           "src",
-          BASE_URL + "views/sales/print_struk.php?id=" + res.sale_id
+          BASE_URL + "views/sales/print_struk.php?id=" + res.sale_id,
         );
 
         saleCart = [];
@@ -2169,17 +2397,99 @@ function saveSale() {
         $("#sale_discount").val(0);
 
         $("#scan_barcode").focus();
-
       } else {
         alert(res.message);
       }
-    }
+    },
   });
 }
 
 // fungsi untuk format angka ke format rupiah, misal 10000 jadi 10.000
 function formatRupiah(num) {
   return new Intl.NumberFormat("id-ID").format(num);
+}
+
+function saveReturn() {
+  // fungsi untuk menyimpan retur pembelian, dengan payload berisi purchase_id dan array items yang diretur (purchase_item_id dan qty), lalu kirim ke server dengan AJAX POST, jika berhasil maka modal ditutup dan datatable direload
+  let purchase_id = $("#purchase_id").val();
+
+  let items = [];
+
+  $(".return-qty").each(function () {
+    let qty = parseFloat($(this).val()) || 0;
+
+    if (qty > 0) {
+      items.push({
+        purchase_item_id: $(this).data("id"),
+        qty: qty,
+      });
+    }
+  });
+
+  if (items.length === 0) {
+    alert("Tidak ada item yang diretur");
+    return;
+  }
+
+  $.ajax({
+    url: BASE_URL + "models/mdl_save_purchase_return.php",
+    type: "POST",
+    data: JSON.stringify({
+      purchase_id: purchase_id,
+      items: items,
+    }),
+    contentType: "application/json",
+    dataType: "json",
+    success: function (res) {
+      if (res.success) {
+        alert("Retur berhasil");
+
+        $("#modalReturn").modal("hide");
+
+        $("#datatable1").DataTable().ajax.reload();
+      } else {
+        alert(res.message);
+      }
+    },
+  });
+}
+
+function saveSaleReturn() {
+  let sale_id = $("#sale_id").val();
+  let items = [];
+
+  $(".sale-return-qty").each(function () {
+    let qty = parseFloat($(this).val()) || 0;
+
+    if (qty > 0) {
+      items.push({
+        sale_item_id: $(this).data("sale_item_id"),
+        qty: qty,
+      });
+    }
+  });
+
+  if (items.length === 0) {
+    alert("Tidak ada item retur");
+    return;
+  }
+
+  $.ajax({
+    url: BASE_URL + "models/mdl_save_sale_return.php",
+    type: "POST",
+    data: JSON.stringify({ sale_id, items }),
+    contentType: "application/json",
+    dataType: "json",
+    success: function (res) {
+      if (res.success) {
+        alert("Retur berhasil");
+        $("#modalSaleReturn").modal("hide");
+        $("#datatable1").DataTable().ajax.reload();
+      } else {
+        alert(res.message);
+      }
+    },
+  });
 }
 
 //----------------------------------------------------------------------------Blok DML database-----------------------------------------------------------//
@@ -2401,6 +2711,61 @@ function pembatalan(id) {
   });
 }
 
+function openReturnModal(purchase_id) {
+  console.log("OPEN RETURN MODAL:", purchase_id);
+
+  $("#modalReturn").modal("show");
+
+  $("#purchase_id").val(purchase_id);
+
+  loadReturnableItems(purchase_id);
+}
+
+function openSaleReturnModal(sale_id) {
+  $("#sale_id").val(sale_id);
+  $("#modalSaleReturn").modal("show");
+
+  $.ajax({
+    url: BASE_URL + "models/mdl_get_returnable_sale_items.php",
+    type: "GET",
+    data: { sale_id: sale_id },
+    dataType: "json",
+    success: function (res) {
+      let tbody = $("#tblSaleReturn tbody");
+      tbody.empty();
+
+      if (!res.success) {
+        alert(res.message);
+        return;
+      }
+
+      if (res.data.length === 0) {
+        tbody.append(
+          `<tr><td colspan="5" align="center">Semua item sudah diretur</td></tr>`,
+        );
+        return;
+      }
+
+      res.data.forEach((row) => {
+        tbody.append(`
+          <tr>
+            <td>${row.name}</td>
+            <td>${row.sold_qty}</td>
+            <td>${row.returned_qty}</td>
+            <td>${row.remaining_qty}</td>
+            <td>
+              <input type="number"
+                     class="form-control sale-return-qty"
+                     data-sale_item_id="${row.sale_item_id}"
+                     max="${row.remaining_qty}"
+                     min="0">
+            </td>
+          </tr>
+        `);
+      });
+    },
+  });
+}
 //start report handling
 // end sales invoice report
 

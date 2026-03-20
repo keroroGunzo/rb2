@@ -31,48 +31,33 @@ try {
 
    $db->beginTransaction();
 
-   /* ===============================
-   HITUNG TOTAL
-================================ */
-
+   /* ================= HITUNG TOTAL ================= */
    $total = 0;
-
    foreach ($items as $it) {
-
       $total += $it['price'] * $it['qty'];
    }
 
    $grand_total = $total - $discount;
 
-
-   /* ===============================
-   DATA STORE & CASHIER
-================================ */
+   /* ================= STORE & CASHIER ================= */
    if (!isset($_SESSION['store_id'])) {
       throw new Exception("Store tidak ditemukan pada session");
    }
+
    $store_id = $_SESSION['store_id'];
-   $cashier_id = $_SESSION['user_id'] ?? 1;
+   $cashier_id = $_SESSION['user_id'];
    $member_id = null;
 
-
-   /* ===============================
-   GENERATE INVOICE
-================================ */
-
+   /* ================= INVOICE ================= */
    $invoice = "INV" . date("YmdHis");
 
-
-   /* ===============================
-   INSERT SALES
-================================ */
-
+   /* ================= INSERT SALES ================= */
    $db->execute("
-INSERT INTO sales
-(invoice_no,store_id,cashier_id,member_id,total,discount,grand_total,payment_method)
-VALUES
-(:invoice,:store,:cashier,:member,:total,:discount,:grand,:method)
-", [
+      INSERT INTO sales
+      (invoice_no,store_id,cashier_id,member_id,total,discount,grand_total,payment_method)
+      VALUES
+      (:invoice,:store,:cashier,:member,:total,:discount,:grand,:method)
+   ", [
       ':invoice' => $invoice,
       ':store' => $store_id,
       ':cashier' => $cashier_id,
@@ -85,11 +70,7 @@ VALUES
 
    $sale_id = $db->lastInsertId();
 
-
-   /* ===============================
-   INSERT SALE ITEMS
-================================ */
-
+   /* ================= INSERT SALE ITEMS ================= */
    foreach ($items as $it) {
 
       $product_id = $it['product_id'];
@@ -97,60 +78,65 @@ VALUES
       $price = $it['price'];
       $subtotal = $qty * $price;
 
+      // 🔥 COST SNAPSHOT
+      $product = $db->single("
+         SELECT avg_cost
+         FROM products
+         WHERE id = :id
+      ", [':id' => $product_id]);
+
+      $cost = $product ? (float)$product['avg_cost'] : 0;
+
       $db->execute("
-INSERT INTO sale_items
-(sale_id,product_id,qty,price,subtotal)
-VALUES
-(:sale,:product,:qty,:price,:subtotal)
-", [
+         INSERT INTO sale_items
+         (sale_id,product_id,qty,price,cost,subtotal)
+         VALUES
+         (:sale,:product,:qty,:price,:cost,:subtotal)
+      ", [
          ':sale' => $sale_id,
          ':product' => $product_id,
          ':qty' => $qty,
          ':price' => $price,
+         ':cost' => $cost,
          ':subtotal' => $subtotal
       ]);
 
-
-      /* ===============================
-   UPDATE STOCK STORE
-================================ */
+      /* ================= UPDATE STOCK STORE ================= */
       $cek = $db->single("
-SELECT qty
-FROM stocks
-WHERE product_id = :product
-AND location_type='store'
-AND location_id=:store
-", [
+         SELECT qty
+         FROM stocks
+         WHERE product_id = :product
+         AND location_type='store'
+         AND location_id=:store
+      ", [
          ':product' => $product_id,
          ':store' => $store_id
       ]);
 
       if (!$cek || $cek['qty'] < $qty) {
          throw new Exception("Stok tidak cukup");
-      } else {
-         $db->execute("
-UPDATE stocks
-SET qty = qty - :qty
-WHERE product_id = :product
-AND location_type = 'store'
-AND location_id = :store
-AND qty >= :qty
-", [
-            ':qty' => $qty,
-            ':product' => $product_id,
-            ':store' => $store_id
-         ]);
       }
-      /* ===============================
-   INSERT STOCK MOVEMENT
-================================ */
 
       $db->execute("
-INSERT INTO stock_movements
-(product_id,from_type,from_id,qty,movement_type,reference_id)
-VALUES
-(:product,'store',:store,:qty,'sale',:ref)
-", [
+         UPDATE stocks
+         SET qty = qty - :qty
+         WHERE product_id = :product
+         AND location_type = 'store'
+         AND location_id = :store
+         AND qty >= :qty
+      ", [
+         ':qty' => $qty,
+         ':product' => $product_id,
+         ':store' => $store_id
+      ]);
+
+      /* ================= STOCK MOVEMENT ================= */
+      $db->execute("
+         INSERT INTO stock_movements
+         (product_id,from_type,from_id,qty,movement_type,reference_id)
+         VALUES
+         (:product,'store',:store,:qty,'sale',:ref)
+      ", [
          ':product' => $product_id,
          ':store' => $store_id,
          ':qty' => $qty,
@@ -164,10 +150,10 @@ VALUES
    $response['message'] = "Transaksi berhasil";
    $response['invoice'] = $invoice;
    $response['sale_id'] = $sale_id;
+
 } catch (Exception $e) {
 
    $db->rollBack();
-
    $response['message'] = $e->getMessage();
 }
 

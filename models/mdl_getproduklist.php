@@ -11,6 +11,8 @@ p.id,
 p.sku,
 p.name,
 p.price_retail,
+p.price_wholesale,
+p.min_wholesale_qty,
 s.location_type
 FROM products p
 LEFT JOIN stocks s ON p.id = s.product_id

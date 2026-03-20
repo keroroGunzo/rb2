@@ -13,7 +13,7 @@ $output = ['data' => []];
 try {
     $sql = "
         SELECT 
-            id,sku,barcode,name,price_retail,price_wholesale,min_wholesale_qty,cost_price,created_at
+            id,sku,barcode,name,price_retail,price_wholesale,min_wholesale_qty,last_cost,avg_cost,created_at
         FROM products
         ORDER BY name ASC
     ";
@@ -31,7 +31,8 @@ try {
             'price_retail'      => $row['price_retail'],
             'price_wholesale'   => $row['price_wholesale'],
             'min_wholesale_qty' => $row['min_wholesale_qty'],
-            'cost_price'        => $row['cost_price'],
+            'last_cost'         => $row['last_cost'],
+            'avg_cost'          => $row['avg_cost'],
             'created_at'        => $row['created_at']
         ];
     }

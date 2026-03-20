@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit;
 }
+
 header('Content-Type: application/json');
 
 $response = ['success' => false, 'message' => ''];
@@ -24,19 +25,17 @@ try {
 
     $db->beginTransaction();
 
-    // ==========================================
-    // 🔥 UPDATE MODE
-    // ==========================================
+    // ==============================
+    // UPDATE MODE
+    // ==============================
     if ($id) {
 
-        // 1️⃣ Ambil item lama
         $oldItems = $db->query("
             SELECT product_id, qty
             FROM purchase_items
             WHERE purchase_id = :id
         ", [':id' => $id]);
 
-        // 2️⃣ Kurangi stok lama
         foreach ($oldItems as $old) {
             $db->execute("
                 UPDATE stocks
@@ -51,13 +50,8 @@ try {
             ]);
         }
 
-        // 3️⃣ Hapus item lama
-        $db->execute("
-            DELETE FROM purchase_items
-            WHERE purchase_id = :id
-        ", [':id' => $id]);
+        $db->execute("DELETE FROM purchase_items WHERE purchase_id = :id", [':id' => $id]);
 
-        // 4️⃣ Update header
         $db->execute("
             UPDATE purchases
             SET supplier_id = :supplier_id,
@@ -72,11 +66,8 @@ try {
         ]);
 
         $purchase_id = $id;
-    }
-    // ==========================================
-    // 🔥 INSERT MODE
-    // ==========================================
-    else {
+
+    } else {
 
         $db->execute("
             INSERT INTO purchases (supplier_id, warehouse_id, total)
@@ -90,9 +81,9 @@ try {
         $purchase_id = $db->lastInsertId();
     }
 
-    // ==========================================
-    // 🔥 Insert Items Baru + Tambah Stok
-    // ==========================================
+    // ==============================
+    // INSERT ITEMS + STOCK + COST
+    // ==============================
     foreach ($items as $item) {
 
         $product_id = (int)$item['product_id'];
@@ -100,7 +91,7 @@ try {
         $cost       = (float)$item['cost_price'];
         $subtotal   = $qty * $cost;
 
-        // Insert item
+        // insert purchase item
         $db->execute("
             INSERT INTO purchase_items
             (purchase_id, product_id, qty, cost_price, subtotal)
@@ -113,7 +104,21 @@ try {
             ':subtotal'    => $subtotal
         ]);
 
-        // Tambah stok
+        // ambil stok lama
+        $stockRow = $db->single("
+            SELECT qty
+            FROM stocks
+            WHERE product_id = :product_id
+            AND location_type = 'warehouse'
+            AND location_id = :warehouse_id
+        ", [
+            ':product_id' => $product_id,
+            ':warehouse_id' => $warehouse_id
+        ]);
+
+        $stock_old = $stockRow ? (float)$stockRow['qty'] : 0;
+
+        // update stock
         $db->execute("
             INSERT INTO stocks
             (product_id, location_type, location_id, stock_status, qty)
@@ -125,7 +130,7 @@ try {
             ':qty'          => $qty
         ]);
 
-        // Catat movement
+        // movement
         $db->execute("
             INSERT INTO stock_movements
             (product_id, to_type, to_id, qty, movement_type, reference_id)
@@ -136,6 +141,30 @@ try {
             ':qty'          => $qty,
             ':ref'          => $purchase_id
         ]);
+
+        // ================= COST ENGINE =================
+
+        $product = $db->single("
+            SELECT avg_cost
+            FROM products
+            WHERE id = :id
+        ", [':id' => $product_id]);
+
+        $avg_old = $product ? (float)$product['avg_cost'] : 0;
+
+        $avg_new = (($stock_old * $avg_old) + ($qty * $cost))
+                  / ($stock_old + $qty);
+
+        $db->execute("
+            UPDATE products
+            SET last_cost = :last_cost,
+                avg_cost   = :avg_cost
+            WHERE id = :id
+        ", [
+            ':last_cost' => $cost,
+            ':avg_cost'  => $avg_new,
+            ':id'        => $product_id
+        ]);
     }
 
     $db->commit();
@@ -144,6 +173,7 @@ try {
     $response['message'] = $id
         ? "Barang masuk berhasil diupdate."
         : "Barang masuk berhasil ditambahkan.";
+
 } catch (Exception $e) {
 
     $db->rollBack();

@@ -21,6 +21,7 @@ include '../views/pageheader.php';
                         <th>GUDANG</th>
                         <th>TOTAL</th>
                         <th>NO INVOICE</th>
+                        <th>RETURN STATUS</th>
                         <th>CREATED AT</th>
                         <th>AKSI</th>
                     </tr>
@@ -39,9 +40,9 @@ include '../views/pageheader.php';
             <div class="modal-header">
                 <h5 class="modal-title">Form Barang Masuk</h5>
                 <button type="button"
-                        class="close"
-                        data-dismiss="modal"
-                        onclick="resetBarangMasukModal()">
+                    class="close"
+                    data-dismiss="modal"
+                    onclick="resetBarangMasukModal()">
                     <span>&times;</span>
                 </button>
             </div>
@@ -55,8 +56,8 @@ include '../views/pageheader.php';
                         <div class="col-md-4">
                             <label>Supplier</label>
                             <select name="supplier_id" id="supplier_id"
-                                    class="form-control select2"
-                                    required data-json = "supplier_id">
+                                class="form-control select2"
+                                required data-json="supplier_id">
                                 <option value="">-- Pilih Supplier --</option>
                             </select>
                         </div>
@@ -65,8 +66,8 @@ include '../views/pageheader.php';
                         <div class="col-md-4">
                             <label>Warehouse</label>
                             <select name="warehouse_id" id="warehouse_id"
-                                    class="form-control select2"
-                                    required data-json="warehouse_id">
+                                class="form-control select2"
+                                required data-json="warehouse_id">
                                 <option value="">-- Pilih Warehouse --</option>
                             </select>
                         </div>
@@ -75,9 +76,9 @@ include '../views/pageheader.php';
                         <div class="col-md-4">
                             <label>Tanggal</label>
                             <input type="date"
-                                   name="date"
-                                   class="form-control"
-                                   value="<?= date('Y-m-d') ?>" data-json="created_at">
+                                name="date"
+                                class="form-control"
+                                value="<?= date('Y-m-d') ?>" data-json="created_at">
                         </div>
                     </div>
 
@@ -99,12 +100,12 @@ include '../views/pageheader.php';
                                     <td colspan="3" class="text-right"><strong>Total</strong></td>
                                     <td>
                                         <input type="text"
-                                               id="bm_total_display"
-                                               class="form-control text-right"
-                                               readonly>
+                                            id="bm_total_display"
+                                            class="form-control text-right"
+                                            readonly>
                                         <input type="hidden"
-                                               name="total"
-                                               id="bm_total">
+                                            name="total"
+                                            id="bm_total">
                                     </td>
                                     <td></td>
                                 </tr>
@@ -113,8 +114,8 @@ include '../views/pageheader.php';
                     </div>
 
                     <button type="button"
-                            class="btn btn-primary btn-sm"
-                            onclick="addBarangMasukRow()">
+                        class="btn btn-primary btn-sm"
+                        onclick="addBarangMasukRow()">
                         + Tambah Item
                     </button>
 
@@ -122,18 +123,59 @@ include '../views/pageheader.php';
 
                 <div class="modal-footer">
                     <button class="btn btn-success"
-                            onclick="insertFormdata('frm')">
+                        onclick="insertFormdata('frm')">
                         Simpan
                     </button>
                     <button type="button"
-                            class="btn btn-secondary"
-                            data-dismiss="modal"
-                            onclick="resetBarangMasuk()">
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                        onclick="resetBarangMasuk()">
                         Batal
                     </button>
                 </div>
 
             </form>
+        </div>
+    </div>
+</div>
+
+<div id="modalReturn" class="modal fade">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Retur Supplier</h5>
+                <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    onclick="resetBarangMasukModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+
+                <input type="hidden" id="purchase_id">
+
+                <table class="table table-bordered" id="tblReturnItems">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Dibeli</th>
+                            <th>Sudah Retur</th>
+                            <th>Sisa</th>
+                            <th>Qty Retur</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="saveReturn()" class="btn btn-primary">Simpan</button>
+            </div>
+
         </div>
     </div>
 </div>
