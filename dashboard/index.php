@@ -5,12 +5,10 @@ if (!isset($_SESSION['user_id'])) {
   header("Location: ../auth/login.php");
   exit;
 }
-var_dump($_SESSION);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <link rel="icon" type="image/x-icon" href="/rb2/favicon.ico">
   <!-- Required meta tags -->
@@ -56,7 +54,7 @@ var_dump($_SESSION);
   <!-- Bracket CSS -->
   <link rel="stylesheet" href="../css/bracket.css">
   <!--custom css -->
-  <link href="../css/custom.css" rel="stylesheet">
+  <link href="../css/custom.css?v=<?php echo filemtime('css/custom.css'); ?>" rel="stylesheet">
 
 </head>
 
@@ -93,9 +91,9 @@ var_dump($_SESSION);
           <span class="menu-item-label">Pembelian</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_joborder" class="sub-link">Purchase Order</a></li>
+          <!-- <li class="sub-item"><a href="view_joborder" class="sub-link">Purchase Order</a></li> -->
           <li class="sub-item"><a href="view_barangmasuk" class="sub-link">Barang Masuk</a></li>
-          <li class="sub-item"><a href="view_joexpense" class="sub-link">Retur Ke Supplier</a></li>
+          <li class="sub-item"><a href="view_purchase_return" class="sub-link">Retur Ke Supplier</a></li>
         </ul>
       </li><!-- br-menu-item -->
       <li class="br-menu-item">
@@ -117,6 +115,7 @@ var_dump($_SESSION);
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
           <li class="sub-item"><a href="view_penjualan" class="sub-link">Penjualan</a></li>
+          <li class="sub-item"><a href="view_historysales" class="sub-link">Histori Penjualan</a></li>
           <li class="sub-item"><a href="view_customerpayment" class="sub-link">Retur Penjualan</a></li>
         </ul>
       </li>
@@ -173,12 +172,11 @@ var_dump($_SESSION);
         <div class="dropdown">
           <a href="" class="nav-link nav-link-profile" data-toggle="dropdown" style="padding-top: 1px !important; margin-top: 1px !important">
             <span class="logged-name hidden-md-down"><?php echo $_SESSION['name'] ?></span>
-            <img src="https://via.placeholder.com/500" class="wd-32 rounded-circle" alt="">
+            
             <!-- <span class="square-10 bg-success"></span> -->
           </a>
           <div class="dropdown-menu dropdown-menu-header wd-250">
             <div class="tx-center">
-              <a href=""><img src="https://via.placeholder.com/500" class="wd-80 rounded-circle" alt=""></a>
               <h6 class="logged-fullname"><?php echo $_SESSION['store_id'] ?></h6>
               <h6 class="logged-fullname"><?php echo $_SESSION['name'] ?></h6>
               <p><?php echo $_SESSION['role'] ?></p>
@@ -426,7 +424,7 @@ var_dump($_SESSION);
   <script src="../lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
   <script src="../lib/select2/js/select2.min.js"></script>
   <script src="../js/bracket.js"></script>
-  <script src="../js/app.js"></script>
+  <script src="../js/app.js?v=<?php echo filemtime('js/app.js'); ?>"></script>
   <script src="../js/messi/messi.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>
   <script>
