@@ -125,9 +125,9 @@ if (!isset($_SESSION['user_id'])) {
           <span class="menu-item-label">Laporan</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
-          <li class="sub-item"><a href="view_invoice" class="sub-link">Laporan Penjualan</a></li>
-          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Laporan Stok</a></li>
-          <li class="sub-item"><a href="view_customerpayment" class="sub-link">Laba Rugi</a></li>
+          <li class="sub-item"><a href="view_profit" class="sub-link">Laporan Profit</a></li>
+          <li class="sub-item"><a href="view_profit_produk" class="sub-link">Laporan Profit Produk</a></li>
+          <li class="sub-item"><a href="view_labarugi" class="sub-link">Laba Rugi</a></li>
         </ul>
       </li>
       <li class="br-menu-item">

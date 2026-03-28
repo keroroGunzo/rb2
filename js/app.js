@@ -975,11 +975,27 @@ function doCallBack(halaman) {
           },
           { data: "barcode" },
           { data: "name" },
-          { data: "price_retail" },
-          { data: "price_wholesale" },
+          {
+            data: "price_retail",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "price_wholesale",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
           { data: "min_wholesale_qty" },
-          { data: "last_cost" },
-          { data: "avg_cost" },
+          {
+            data: "last_cost",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "avg_cost",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
           { data: "created_at" },
           {
             data: "id",
@@ -1243,7 +1259,11 @@ function doCallBack(halaman) {
           {
             data: "warehouse_name",
           },
-          { data: "total" },
+          {
+            data: "total",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
           { data: "invoice_no" },
           {
             data: "return_status",
@@ -1669,9 +1689,21 @@ function doCallBack(halaman) {
           },
           { data: "store_name" },
           { data: "cashier_name" },
-          { data: "total" },
-          { data: "discount" },
-          { data: "grand_total" },
+          {
+            data: "total",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "discount",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "grand_total",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
           { data: "payment_method" },
           {
             data: "return_status",
@@ -1709,9 +1741,92 @@ function doCallBack(halaman) {
       loadcbSupplier(); // load supplier untuk dropdown filter di halaman pembelian
       loadcbGudang(); // load gudang untuk dropdown filter di halaman pembelian
       break;
+    case "view_profit":
+      $("#datatable_profit").DataTable({
+        ajax: {
+          url: BASE_URL + "models/mdl_getProfit.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          { data: "no" },
+          { data: "invoice_no" },
+          { data: "date" },
+          { data: "store" },
+          { data: "cashier" },
+          {
+            data: "revenue",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "cogs",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "profit",
+            className: "text-right",
+            render: function (d) {
+              let color = d >= 0 ? "green" : "red";
+              return `<span style="color:${color};font-weight:bold">${formatRupiah(d)}</span>`;
+            },
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: Infinity,
+      });
+      break;
+    case "view_profit_produk":
+      $("#datatable_profit_product").DataTable({
+        ajax: {
+          url: BASE_URL + "models/mdl_profit_produk.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          { data: "no" },
+          { data: "product" },
+          { data: "qty" },
+          { data: "revenue", className: "text-right", render: (d) => formatRupiah(d) },
+          { data: "cogs", className: "text-right", render: (d) => formatRupiah(d) },
+          {
+            data: "profit",
+            className: "text-right",
+            render: function (d) {
+              let color = d >= 0 ? "green" : "red";
+              return `<b style="color:${color}">${formatRupiah(d)}</b>`;
+            },
+          },
+          {
+            data: "margin",
+            className: "text-right",
+            render: function (d) {
+              let color = d >= 0 ? "blue" : "red";
+              return `<b style="color:${color}">${d.toFixed(2)}%</b>`;
+            },
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: 0,
+      });
+      break;
   }
 }
 
+//----------------------------------------------------------------------------Blok Profit-----------------------------------------------------------//
+function reloadProfit() {
+  let start = $("#start").val();
+  let end = $("#end").val();
+
+  let url =
+    BASE_URL + "models/mdl_getProfit.php?start=" + start + "&end=" + end;
+
+  $("#datatable_profit").DataTable().ajax.url(url).load();
+}
+//----------------------------------------------------------------------------Blok Penjualan-----------------------------------------------------------//
 function printInvoice(id) {
   if (!id) return;
   const url = `views/print_invoice.php?id=${id}`;
