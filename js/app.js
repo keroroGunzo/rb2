@@ -1826,6 +1826,33 @@ function reloadProfit() {
 
   $("#datatable_profit").DataTable().ajax.url(url).load();
 }
+function filterProfitProduct() {
+
+  let start = $("#start_date").val();
+  let end   = $("#end_date").val();
+
+  if (!start || !end) {
+    alert("Pilih tanggal dulu");
+    return;
+  }
+
+  let url = BASE_URL + "models/mdl_profit_produk.php?start=" + start + "&end=" + end;
+
+  $("#datatable_profit_product").DataTable()
+    .ajax.url(url)
+    .load();
+}
+
+function resetFilter() {
+
+  $("#start_date").val("");
+  $("#end_date").val("");
+
+  $("#datatable_profit_product").DataTable()
+    .ajax.url(BASE_URL + "models/mdl_profit_produk.php")
+    .load();
+}
+
 //----------------------------------------------------------------------------Blok Penjualan-----------------------------------------------------------//
 function printInvoice(id) {
   if (!id) return;
