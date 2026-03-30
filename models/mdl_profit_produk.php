@@ -3,6 +3,17 @@ require '../config/init.php';
 header('Content-Type: application/json');
 
 $output = ['data' => []];
+$start = $_GET['start'] ?? null;
+$end   = $_GET['end'] ?? null;
+
+$where = "";
+$params = [];
+
+if ($start && $end) {
+    $where = "WHERE DATE(s.created_at) BETWEEN :start AND :end";
+    $params[':start'] = $start;
+    $params[':end']   = $end;
+}
 
 try {
 
@@ -24,6 +35,7 @@ try {
         FROM sale_items si
         JOIN products p ON p.id = si.product_id
         JOIN sales s ON s.id = si.sale_id
+        $where
 
         LEFT JOIN (
             SELECT
@@ -39,7 +51,7 @@ try {
         ORDER BY p.name
     ";
 
-    $rows = $db->query($sql);
+    $rows = $db->query($sql, $params);
 
     $no = 1;
 
