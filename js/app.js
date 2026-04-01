@@ -707,6 +707,20 @@ function loadcbToko() {
   });
 }
 
+function loadcbExpCategories() {
+  $.getJSON(BASE_URL + "models/mdl_getcategories.php", function (return_data) {
+    $("#exp_category")
+      .empty()
+      .append('<option value="0">-- Pilih Kategori --</option>');
+    $.each(return_data.data, function (key, value) {
+      $("#exp_category").append(
+        '<option value="' + value.id + '">' + value.name + "</option>",
+      );
+    });
+    $("#exp_category").val("").trigger("change");
+  });
+}
+
 function loadcbSupplier() {
   $.getJSON(BASE_URL + "models/mdl_getsuppliers.php", function (return_data) {
     $("supplier_id")
@@ -1789,8 +1803,16 @@ function doCallBack(halaman) {
           { data: "no" },
           { data: "product" },
           { data: "qty" },
-          { data: "revenue", className: "text-right", render: (d) => formatRupiah(d) },
-          { data: "cogs", className: "text-right", render: (d) => formatRupiah(d) },
+          {
+            data: "revenue",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
+          {
+            data: "cogs",
+            className: "text-right",
+            render: (d) => formatRupiah(d),
+          },
           {
             data: "profit",
             className: "text-right",
@@ -1813,6 +1835,60 @@ function doCallBack(halaman) {
         minimumResultsForSearch: 0,
       });
       break;
+    case "view_labarugi":
+      console.log("load view laba rugi ...");
+      $("select").select2({
+        //dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      break;
+    case "view_expense":
+      $("#datatable1").DataTable({
+        ajax: {
+          url: BASE_URL + "models/mdl_getexpense.php",
+          type: "GET",
+          dataSrc: "data",
+        },
+        columns: [
+          { data: "no" },
+          { data: "id", visible: false, searchable: false },
+          { data: "date" },
+          { data: "category" },
+          { data: "description" },
+          { data: "amount" },
+          { data: "created_at" },
+          { data: "created_by" },
+          {
+            data: "id",
+            width: "20%",
+            render: function (data, type, full) {
+              //console.log(data, type, full);
+              return `<div align="center">
+                            <button type="button" class="btn btn-oblong btn-sm btn-primary"
+                                data-toggle="modal" data-target="#modal"
+                                id="ubah" style="margin:2px"
+                                onclick="getID(${data})">
+                                <span class="fa fa-pencil"></span> Ubah
+                            </button>
+                            <button type="button" class="btn btn-oblong btn-sm btn-danger"
+                                id="hapus" style="margin:2px"
+                                onclick="hapusData(${data},'${full.name}')">
+                                <span class="fa fa-trash-o"></span> Hapus
+                            </button>
+                        </div>`;
+            },
+          },
+        ],
+      });
+      $(".dataTables_length select").select2({
+        minimumResultsForSearch: 0,
+      });
+      $("#modal select").select2({
+        dropdownParent: $("#modal"),
+        width: "100%",
+      });
+      loadcbExpCategories(); // load kategori expense untuk dropdown di halaman expense
+      break;
   }
 }
 
@@ -1827,30 +1903,99 @@ function reloadProfit() {
   $("#datatable_profit").DataTable().ajax.url(url).load();
 }
 function filterProfitProduct() {
-
   let start = $("#start_date").val();
-  let end   = $("#end_date").val();
+  let end = $("#end_date").val();
 
   if (!start || !end) {
     alert("Pilih tanggal dulu");
     return;
   }
 
-  let url = BASE_URL + "models/mdl_profit_produk.php?start=" + start + "&end=" + end;
+  let url =
+    BASE_URL + "models/mdl_profit_produk.php?start=" + start + "&end=" + end;
 
-  $("#datatable_profit_product").DataTable()
-    .ajax.url(url)
-    .load();
+  $("#datatable_profit_product").DataTable().ajax.url(url).load();
 }
 
 function resetFilter() {
-
   $("#start_date").val("");
   $("#end_date").val("");
 
-  $("#datatable_profit_product").DataTable()
+  $("#datatable_profit_product")
+    .DataTable()
     .ajax.url(BASE_URL + "models/mdl_profit_produk.php")
     .load();
+}
+
+function loadLabaRugi() {
+  let start = $("#lr_start").val();
+  let end = $("#lr_end").val();
+  let startText = formatTanggalIndo(start);
+  let endText = formatTanggalIndo(end);
+  let url = BASE_URL + "models/mdl_labarugi.php";
+
+  if (start && end) {
+    url += "?start=" + start + "&end=" + end;
+  }
+
+  $.get(url, function (res) {
+    // 🔥 SAFE PARSE
+    let revenue = parseFloat(res.revenue) || 0;
+    let discount = parseFloat(res.discount) || 0;
+    let refund = parseFloat(res.refund) || 0;
+    let net_revenue = parseFloat(res.net_revenue) || 0;
+
+    let cogs = parseFloat(res.cogs) || 0;
+    let cogs_reverse = parseFloat(res.cogs_reverse) || 0;
+    let net_cogs = parseFloat(res.net_cogs) || 0;
+
+    let profit = parseFloat(res.gross_profit) || 0;
+    let margin = parseFloat(res.gross_margin) || 0;
+    let expense = parseFloat(res.expense) || 0;
+    let net_profit = parseFloat(res.net_profit) || 0;
+    let color2 = net_profit >= 0 ? "green" : "red";
+    
+    
+    $("#lr_expense").text(formatRupiah(expense));
+    $("#lr_net_profit").html(
+      `<b style="color:${color2}">${formatRupiah(net_profit)}</b>`,
+    );
+
+    // warna margin
+    let marginColor = margin >= 0 ? "text-success" : "text-danger";
+    let today = new Date().toISOString().split("T")[0];
+
+    $("#lr_margin")
+      .removeClass("text-success text-danger")
+      .addClass(marginColor)
+      .text(margin.toFixed(2) + "%");
+
+    // ===== TOP CARDS =====
+    $("#lr_net_revenue").text(formatRupiah(net_revenue));
+    $("#lr_net_cogs").text(formatRupiah(net_cogs));
+
+    // ===== DETAIL =====
+    $("#lr_revenue").text(formatRupiah(revenue));
+    $("#lr_discount").text("- " + formatRupiah(discount));
+    $("#lr_refund").text(formatRupiah(refund));
+
+    $("#lr_net_revenue_detail").text(formatRupiah(net_revenue));
+
+    $("#lr_cogs").text(formatRupiah(cogs));
+    $("#lr_cogs_reverse").text(formatRupiah(cogs_reverse));
+    $("#lr_net_cogs_detail").text(formatRupiah(net_cogs));
+    $("#lr_start").val(today);
+    $("#lr_end").val(today);
+
+    // ===== PROFIT COLOR =====
+    let color = profit >= 0 ? "text-success" : "text-danger";
+
+    $("#lr_profit")
+      .removeClass("text-success text-danger")
+      .addClass(color)
+      .text(formatRupiah(profit));
+  });
+  $("#range_label").text(startText + "  s/d  " + endText);
 }
 
 //----------------------------------------------------------------------------Blok Penjualan-----------------------------------------------------------//
@@ -2914,3 +3059,19 @@ function openSaleReturnModal(sale_id) {
 //end report handling
 
 //-------------------------------------------------------------------------End Blok DML database-----------------------------------------------------------//
+//-----------------------------------------------------------------------------Blok Utility-----------------------------------------------------------//
+function formatTanggalIndo(dateStr) {
+  if (!dateStr) return "";
+
+  let bulan = [
+    "Januari","Februari","Maret","April","Mei","Juni",
+    "Juli","Agustus","September","Oktober","November","Desember"
+  ];
+
+  let date = new Date(dateStr);
+  let d = date.getDate();
+  let m = bulan[date.getMonth()];
+  let y = date.getFullYear();
+
+  return `${d} ${m} ${y}`;
+}

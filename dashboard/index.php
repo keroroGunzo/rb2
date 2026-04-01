@@ -122,6 +122,15 @@ if (!isset($_SESSION['user_id'])) {
       <li class="br-menu-item">
         <a href="#" class="br-menu-link with-sub dummy">
           <i class="menu-item-icon faicon fa fa-file-invoice"></i>
+          <span class="menu-item-label">Pengeluaran</span>
+        </a><!-- br-menu-link -->
+        <ul class="br-menu-sub">
+          <li class="sub-item"><a href="view_expense" class="sub-link">Daftar Pengeluaran</a></li>
+        </ul>
+      </li>
+      <li class="br-menu-item">
+        <a href="#" class="br-menu-link with-sub dummy">
+          <i class="menu-item-icon faicon fa fa-file-invoice"></i>
           <span class="menu-item-label">Laporan</span>
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub">
